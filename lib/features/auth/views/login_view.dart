@@ -195,6 +195,18 @@ class _LoginViewState extends State<LoginView>
           key: _viewModel.formKey,
           child: Column(
             children: [
+              // Kurum Adı
+              _buildInputField(
+                controller: _viewModel.kurumController,
+                hintText: 'Kurum Adı',
+                prefixIcon: Icons.business_outlined,
+                keyboardType: TextInputType.text,
+                validator: _viewModel.validateKurum,
+                textInputAction: TextInputAction.next,
+              ),
+
+              const SizedBox(height: 14),
+
               // E-posta
               _buildInputField(
                 controller: _viewModel.emailController,

@@ -142,6 +142,17 @@ class _RegisterViewState extends State<RegisterView> with SingleTickerProviderSt
           key: _viewModel.formKey,
           child: Column(
             children: [
+              // Kurum / Firma Adı
+              _buildInputField(
+                controller: _viewModel.kurumController,
+                hintText: 'Kurum / Firma Adı',
+                prefixIcon: Icons.business_outlined,
+                keyboardType: TextInputType.text,
+                validator: _viewModel.validateKurum,
+                textInputAction: TextInputAction.next,
+              ),
+              const SizedBox(height: 14),
+
               // Ad Soyad
               _buildInputField(
                 controller: _viewModel.nameController,
@@ -149,6 +160,17 @@ class _RegisterViewState extends State<RegisterView> with SingleTickerProviderSt
                 prefixIcon: Icons.person_outline_rounded,
                 keyboardType: TextInputType.name,
                 validator: _viewModel.validateName,
+                textInputAction: TextInputAction.next,
+              ),
+              const SizedBox(height: 14),
+
+              // Telefon Numarası
+              _buildInputField(
+                controller: _viewModel.phoneController,
+                hintText: 'Telefon Numarası',
+                prefixIcon: Icons.phone_outlined,
+                keyboardType: TextInputType.phone,
+                validator: _viewModel.validatePhone,
                 textInputAction: TextInputAction.next,
               ),
               const SizedBox(height: 14),

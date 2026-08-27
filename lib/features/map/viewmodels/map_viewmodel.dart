@@ -210,7 +210,10 @@ class MapViewModel extends ChangeNotifier {
               ? BitmapDescriptor.hueOrange
               : BitmapDescriptor.hueGreen,
         ),
-        infoWindow: InfoWindow.noText,
+        infoWindow: InfoWindow(
+          title: box.shopName,
+          snippet: isWaiting ? 'Bekliyor' : 'Alındı',
+        ),
         onTap: () => onMarkerTapped(box),
       );
     }).toSet();

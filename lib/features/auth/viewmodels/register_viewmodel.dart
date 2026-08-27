@@ -7,7 +7,9 @@ class RegisterViewModel extends ChangeNotifier {
   final AuthService _authService = AuthService();
 
   // ── Controllers ──
+  final kurumController = TextEditingController();
   final nameController = TextEditingController();
+  final phoneController = TextEditingController();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final formKey = GlobalKey<FormState>();
@@ -34,10 +36,26 @@ class RegisterViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Kurum / Firma validasyonu
+  String? validateKurum(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Kurum / Firma adı giriniz';
+    }
+    return null;
+  }
+
   /// Ad Soyad validasyonu
   String? validateName(String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'Ad Soyad giriniz';
+    }
+    return null;
+  }
+
+  /// Telefon validasyonu
+  String? validatePhone(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Telefon numarası giriniz';
     }
     return null;
   }
@@ -75,10 +93,12 @@ class RegisterViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await _authService.signUpWithEmail(
+      await _authService.registerNewKurumAndAdmin(
+        kurumAdi: kurumController.text,
+        displayName: nameController.text,
+        phone: phoneController.text,
         email: emailController.text,
         password: passwordController.text,
-        displayName: nameController.text.trim(),
       );
       _isLoading = false;
       notifyListeners();
@@ -93,7 +113,9 @@ class RegisterViewModel extends ChangeNotifier {
 
   @override
   void dispose() {
+    kurumController.dispose();
     nameController.dispose();
+    phoneController.dispose();
     emailController.dispose();
     passwordController.dispose();
     super.dispose();

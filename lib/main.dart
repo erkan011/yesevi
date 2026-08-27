@@ -7,6 +7,7 @@ import 'package:intl/date_symbol_data_local.dart';
 
 import 'app.dart';
 import 'core/router/app_router.dart';
+import 'data/services/auth_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,6 +20,9 @@ void main() async {
     await Firebase.initializeApp();
     // Oturum açıksa doğrudan anasayfaya yönlendir
     if (FirebaseAuth.instance.currentUser != null) {
+      // Mevcut oturumu geri yükle (kurum_id ve role bilgisini çek)
+      final authService = AuthService();
+      await authService.restoreSession();
       initialRoute = AppRouter.home;
     }
   } catch (e) {

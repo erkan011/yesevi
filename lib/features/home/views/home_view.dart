@@ -1,6 +1,6 @@
 // Home View — Ana sayfa (Bottom Navigation ile sayfa yönetimi)
 //
-// Bu sayfa Map, List ve Settings sayfalarını
+// Bu sayfa Map, List, İhtiyaç Sahipleri ve Settings sayfalarını
 // Bottom Navigation Bar ile birleştirir.
 
 import 'package:flutter/material.dart';
@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../map/views/map_view.dart';
 import '../../box_list/views/box_list_view.dart';
+import '../../beneficiaries/views/beneficiaries_view.dart';
 import '../../settings/views/settings_view.dart';
 
 class HomeView extends StatefulWidget {
@@ -23,6 +24,7 @@ class _HomeViewState extends State<HomeView> {
   final List<Widget> _pages = [
     const MapView(),
     const BoxListView(),
+    const BeneficiariesView(),
     const SettingsView(),
   ];
 
@@ -49,6 +51,7 @@ class _HomeViewState extends State<HomeView> {
           child: BottomNavigationBar(
             currentIndex: _currentIndex,
             onTap: (index) => setState(() => _currentIndex = index),
+            type: BottomNavigationBarType.fixed,
             items: const [
               BottomNavigationBarItem(
                 icon: Icon(Icons.map_outlined),
@@ -58,7 +61,12 @@ class _HomeViewState extends State<HomeView> {
               BottomNavigationBarItem(
                 icon: Icon(Icons.list_alt_outlined),
                 activeIcon: Icon(Icons.list_alt),
-                label: 'Liste',
+                label: 'Kutular',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.people_outline_rounded),
+                activeIcon: Icon(Icons.people_rounded),
+                label: 'İhtiyaç',
               ),
               BottomNavigationBarItem(
                 icon: Icon(Icons.settings_outlined),

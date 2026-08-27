@@ -9,7 +9,10 @@ import '../../../core/enums/box_status.dart';
 import '../../../data/services/firestore_service.dart';
 import '../../../data/services/auth_service.dart';
 import '../../../data/services/location_service.dart';
+import '../../../data/services/session_manager.dart';
+import '../../../shared/widgets/map_picker_view.dart';
 import 'package:uuid/uuid.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 /// Yeni Kutu Bırak / Bağış Teslim Al Bottom Sheet Formları
 class BoxActionSheet {
@@ -55,8 +58,48 @@ class _DropBoxFormState extends State<_DropBoxForm> {
   final _authService = AuthService();
   final _locationService = LocationService();
 
+  LatLng? _selectedLocation;
+  bool _isLocating = true;
   bool _isLoading = false;
   String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchCurrentLocation();
+  }
+
+  Future<void> _fetchCurrentLocation() async {
+    try {
+      final position = await _locationService.getCurrentLocation();
+      if (mounted) {
+        setState(() {
+          _selectedLocation = LatLng(position.latitude, position.longitude);
+          _isLocating = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLocating = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _openMapPicker() async {
+    final LatLng? pickedLocation = await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => MapPickerView(initialLocation: _selectedLocation),
+      ),
+    );
+
+    if (pickedLocation != null && mounted) {
+      setState(() {
+        _selectedLocation = pickedLocation;
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -67,25 +110,35 @@ class _DropBoxFormState extends State<_DropBoxForm> {
   Future<void> _handleDropBox() async {
     if (!_formKey.currentState!.validate()) return;
 
+    if (_selectedLocation == null) {
+      setState(() => _errorMessage = 'Lütfen konum seçin.');
+      return;
+    }
+
+    // kurum_id kontrolü
+    final kurumId = SessionManager.instance.kurumId;
+    if (kurumId == null || kurumId.isEmpty) {
+      setState(() => _errorMessage = 'Kurum bilgisi bulunamadı. Lütfen tekrar giriş yapın.');
+      return;
+    }
+
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
 
     try {
-      // 1. Konumu al
-      final position = await _locationService.getCurrentLocation();
-      
       // 2. Kullanıcıyı al
       final user = _authService.getCurrentUserModel();
       if (user == null) throw Exception('Kullanıcı oturumu bulunamadı.');
 
-      // 3. Modeli oluştur
+      // 3. Modeli oluştur (kurum_id dahil)
       final newBox = DonationBox(
         id: const Uuid().v4(),
+        kurumId: kurumId,
         shopName: _shopNameController.text.trim(),
-        latitude: position.latitude,
-        longitude: position.longitude,
+        latitude: _selectedLocation!.latitude,
+        longitude: _selectedLocation!.longitude,
         droppedBy: user.displayName.isNotEmpty ? user.displayName : user.email,
         droppedAt: DateTime.now(),
         status: BoxStatus.waiting,
@@ -150,12 +203,83 @@ class _DropBoxFormState extends State<_DropBoxForm> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Cihazınızın mevcut konumu (GPS) kutu konumu olarak kaydedilecektir.',
+              'Cihazınızın mevcut konumu (GPS) varsayılan olarak seçilir, isterseniz haritadan değiştirebilirsiniz.',
               style: GoogleFonts.inter(
                 fontSize: 13,
                 color: AppColors.textSecondary,
               ),
             ),
+            const SizedBox(height: 24),
+
+            // Konum Seçici alanı
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: AppColors.primarySurface,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                   Icon(
+                    _selectedLocation != null ? Icons.location_on_rounded : Icons.location_off_outlined,
+                    size: 24,
+                    color: AppColors.primary,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Kutu Konumu',
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            color: AppColors.primaryDark,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        if (_isLocating) 
+                          Text('Konum alınıyor...', style: GoogleFonts.inter(fontSize: 12, color: AppColors.primary))
+                        else if (_selectedLocation != null)
+                          Text(
+                            'Lat: ${_selectedLocation!.latitude.toStringAsFixed(5)}, Lng: ${_selectedLocation!.longitude.toStringAsFixed(5)}',
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.primary,
+                            ),
+                          )
+                        else
+                          Text(
+                            'Konum alınamadı',
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              color: AppColors.error,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: _openMapPicker,
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    child: Text(
+                      _selectedLocation != null ? 'Değiştir' : 'Seç',
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
             const SizedBox(height: 24),
 
             AppTextField(
@@ -258,8 +382,6 @@ class _CollectBoxFormState extends State<_CollectBoxForm> {
       );
 
       if (mounted) {
-        // İki bottom sheet üst üste açık olabilir (Detay + Form), 
-        // bu yüzden formu kapatıp geri dönmek güvenli.
         Navigator.pop(context);
       }
     } catch (e) {

@@ -10,6 +10,7 @@ class LoginViewModel extends ChangeNotifier {
   final AuthService _authService = AuthService();
 
   // ── Controllers ──
+  final kurumController = TextEditingController();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final formKey = GlobalKey<FormState>();
@@ -34,6 +35,14 @@ class LoginViewModel extends ChangeNotifier {
   void clearError() {
     _errorMessage = null;
     notifyListeners();
+  }
+
+  /// Kurum adı validasyonu
+  String? validateKurum(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Kurum adı giriniz';
+    }
+    return null;
   }
 
   /// E-posta validasyonu
@@ -70,6 +79,7 @@ class LoginViewModel extends ChangeNotifier {
 
     try {
       await _authService.signInWithEmail(
+        kurumAdi: kurumController.text,
         email: emailController.text,
         password: passwordController.text,
       );
@@ -86,6 +96,7 @@ class LoginViewModel extends ChangeNotifier {
 
   @override
   void dispose() {
+    kurumController.dispose();
     emailController.dispose();
     passwordController.dispose();
     super.dispose();
