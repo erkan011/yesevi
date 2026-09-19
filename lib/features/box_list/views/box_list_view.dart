@@ -4,10 +4,11 @@ import 'package:intl/intl.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/enums/box_status.dart';
 import '../../../shared/widgets/app_text_field.dart';
 import '../../../shared/widgets/box_card.dart';
 import '../viewmodels/box_list_viewmodel.dart';
-import '../../auth/views/login_view.dart'; // ListenableBuilder importu için
+import 'box_detail_view.dart';
 
 /// Kutuların liste halinde gösterildiği ekran
 class BoxListView extends StatefulWidget {
@@ -26,7 +27,7 @@ class _BoxListViewState extends State<BoxListView>
   void initState() {
     super.initState();
     _viewModel = BoxListViewModel();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging) {
         _viewModel.setTabIndex(_tabController.index);
@@ -72,6 +73,7 @@ class _BoxListViewState extends State<BoxListView>
                 controller: _tabController,
                 tabs: const [
                   Tab(text: 'Bekleyenler'),
+                  Tab(text: 'Boşaltılanlar'),
                   Tab(text: 'Alınanlar'),
                 ],
               ),
@@ -90,13 +92,21 @@ class _BoxListViewState extends State<BoxListView>
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
-                    Icons.inventory_2_outlined,
+                    _tabController.index == 0 
+                        ? Icons.inventory_2_outlined 
+                        : _tabController.index == 1
+                            ? Icons.inbox_outlined
+                            : Icons.check_circle_outline,
                     size: 64,
                     color: AppColors.textTertiary.withOpacity(0.5),
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Kutu bulunamadı',
+                    _tabController.index == 0
+                        ? 'Bekleyen kutu bulunamadı'
+                        : _tabController.index == 1
+                            ? 'Boşaltılan kutu bulunamadı'
+                            : 'Alınan kutu bulunamadı',
                     style: GoogleFonts.inter(
                       fontSize: 16,
                       color: AppColors.textSecondary,
@@ -113,14 +123,39 @@ class _BoxListViewState extends State<BoxListView>
             itemBuilder: (context, index) {
               final box = boxes[index];
               final dateFormat = DateFormat('dd MMM yyyy', 'tr_TR');
+              final numberFormat = NumberFormat('#,##0.00', 'tr_TR');
               
+              // Alt bilgi metni
+              String subtitle;
+              if (box.status == BoxStatus.collected) {
+                subtitle = '${box.collectedBy ?? "-"} • ${dateFormat.format(box.collectedAt ?? box.droppedAt)}';
+                if (box.donationAmount != null) {
+                  subtitle += ' • ₺${numberFormat.format(box.donationAmount)}';
+                }
+              } else if (box.status == BoxStatus.emptied) {
+                subtitle = '${box.collectedBy ?? "-"} • Boşaltıldı'; // collectedBy includes emptiedBy here via firestore update
+                if (box.collectedAt != null) {
+                  subtitle += ' • ${dateFormat.format(box.collectedAt!)}';
+                }
+                if (box.donationAmount != null) {
+                  subtitle += ' • ₺${numberFormat.format(box.donationAmount)}';
+                }
+              } else {
+                subtitle = '${box.droppedBy} • ${dateFormat.format(box.droppedAt)}';
+              }
+
               return BoxCard(
                 shopName: box.shopName,
                 status: box.status.name,
-                droppedBy: box.droppedBy,
-                date: dateFormat.format(box.droppedAt),
+                droppedBy: subtitle,
+                date: '',
                 onTap: () {
-                  // İsteğe bağlı: Kutu detay modals eklenebilir.
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => BoxDetailView(box: box),
+                    ),
+                  );
                 },
               );
             },

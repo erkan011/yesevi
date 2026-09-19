@@ -13,22 +13,8 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('tr_TR', null);
 
-  String initialRoute = AppRouter.login;
-
-  // Firebase başlat
-  try {
-    await Firebase.initializeApp();
-    // Oturum açıksa doğrudan anasayfaya yönlendir
-    if (FirebaseAuth.instance.currentUser != null) {
-      // Mevcut oturumu geri yükle (kurum_id ve role bilgisini çek)
-      final authService = AuthService();
-      await authService.restoreSession();
-      initialRoute = AppRouter.home;
-    }
-  } catch (e) {
-    debugPrint('Firebase başlatılamadı. Uygulamanın açılması için bu hata yakalandı: $e');
-    debugPrint('Lütfen google-services.json dosyanızı kontrol edin veya flutterfire configure komutunu çalıştırın.');
-  }
+  // Splash Screen uygulamanın başlangıç rotası olacak ve Firebase'i arka planda yükleyecek.
+  String initialRoute = AppRouter.splash;
 
   // Durum çubuğu rengini açık tema için ayarla
   SystemChrome.setSystemUIOverlayStyle(

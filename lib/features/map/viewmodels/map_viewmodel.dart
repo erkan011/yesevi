@@ -45,8 +45,11 @@ class MapViewModel extends ChangeNotifier {
   bool get isBottomSheetOpen => _isBottomSheetOpen;
 
   // ── Bağış Kutuları (Gerçek Zamanlı Veriler) ──
-  List<DonationBox> _boxes = [];
-  List<DonationBox> get boxes => _boxes;
+  List<DonationBox> _allBoxes = [];
+  List<DonationBox> get allBoxes => _allBoxes;
+  
+  /// Haritada gösterilecek kutular (Sadece aktif olanlar)
+  List<DonationBox> get boxes => _allBoxes.where((b) => b.status == BoxStatus.waiting).toList();
 
   MapViewModel() {
     _initBoxStream();
@@ -54,12 +57,12 @@ class MapViewModel extends ChangeNotifier {
 
   void _initBoxStream() {
     _boxSubscription = _boxService.getBoxesStream().listen((boxesList) {
-      _boxes = boxesList;
+      _allBoxes = boxesList;
       // Kutu güncellendiğinde eğer selectedBox var ise,
       // seçili kutuyu da güncelle (Miktar/Durum değişirse bottom sheet anında güncellensin)
       if (_selectedBox != null) {
         try {
-          _selectedBox = _boxes.firstWhere((b) => b.id == _selectedBox!.id);
+          _selectedBox = _allBoxes.firstWhere((b) => b.id == _selectedBox!.id);
         } catch (_) {
           _selectedBox = null;
           _isBottomSheetOpen = false;
@@ -183,6 +186,7 @@ class MapViewModel extends ChangeNotifier {
     }
   }
 
+
   /// Kullanıcının konumundan kutunun uzaklığını hesapla
   String? getDistanceToBox(DonationBox box) {
     if (_currentPosition == null) return null;
@@ -197,22 +201,19 @@ class MapViewModel extends ChangeNotifier {
     return _locationService.formatDistance(distance);
   }
 
-  /// Marker set'ini oluştur
+  /// Marker set'ini oluştur — haritada sadece waiting kutular gösteriliyor
   Set<Marker> _buildMarkers() {
-    return _boxes.map((box) {
-      final isWaiting = box.status == BoxStatus.waiting;
-
+    // Sadece aktif bekleyen kutuları haritaya ekle
+    final visibleBoxes = _allBoxes.where((b) => b.status == BoxStatus.waiting).toList();
+    
+    return visibleBoxes.map((box) {
       return Marker(
         markerId: MarkerId(box.id),
         position: LatLng(box.latitude, box.longitude),
-        icon: BitmapDescriptor.defaultMarkerWithHue(
-          isWaiting
-              ? BitmapDescriptor.hueOrange
-              : BitmapDescriptor.hueGreen,
-        ),
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueYellow),
         infoWindow: InfoWindow(
           title: box.shopName,
-          snippet: isWaiting ? 'Bekliyor' : 'Alındı',
+          snippet: 'Bekliyor',
         ),
         onTap: () => onMarkerTapped(box),
       );

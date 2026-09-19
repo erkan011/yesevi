@@ -23,6 +23,27 @@ class BoxCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWaiting = status == 'waiting';
+    final isEmptied = status == 'emptied';
+    final isCollected = status == 'collected';
+
+    // Durum rengi
+    Color statusColor;
+    IconData statusIcon;
+    String statusLabel;
+
+    if (isWaiting) {
+      statusColor = AppColors.statusWaiting;
+      statusIcon = Icons.inventory_2_outlined;
+      statusLabel = 'Bekliyor';
+    } else if (isEmptied) {
+      statusColor = AppColors.statusEmptied;
+      statusIcon = Icons.inbox_outlined;
+      statusLabel = 'Boşaltıldı';
+    } else {
+      statusColor = AppColors.statusCollected;
+      statusIcon = Icons.check_circle_outline;
+      statusLabel = 'Alındı';
+    }
 
     return GestureDetector(
       onTap: onTap,
@@ -50,18 +71,12 @@ class BoxCard extends StatelessWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: isWaiting
-                    ? AppColors.statusWaiting.withOpacity(0.12)
-                    : AppColors.statusCollected.withOpacity(0.12),
+                color: statusColor.withOpacity(0.12),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
-                isWaiting
-                    ? Icons.inventory_2_outlined
-                    : Icons.check_circle_outline,
-                color: isWaiting
-                    ? AppColors.statusWaiting
-                    : AppColors.statusCollected,
+                statusIcon,
+                color: statusColor,
                 size: 22,
               ),
             ),
@@ -79,18 +94,43 @@ class BoxCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '$droppedBy • $date',
+                    droppedBy.isNotEmpty 
+                        ? droppedBy 
+                        : date,
                     style: Theme.of(context).textTheme.bodySmall,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
             ),
 
-            // Ok İkonu
-            Icon(
-              Icons.chevron_right_rounded,
-              color: AppColors.textTertiary,
-              size: 22,
+            // Durum Etiketi + Ok İkonu
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: statusColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    statusLabel,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: statusColor,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: AppColors.textTertiary,
+                  size: 20,
+                ),
+              ],
             ),
           ],
         ),

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:uuid/uuid.dart';
 
 import '../models/donation_box_model.dart';
 import '../../core/enums/box_status.dart';
@@ -53,18 +54,68 @@ class BoxService {
         .update(box.toMap());
   }
 
-  /// Kutuyu Teslim Al (özel helper metot)
-  Future<void> collectBox({
+  /// Kutuyu Boşalt — Orijinal kutu haritada kalır (işlem görmez).
+  /// Bunun yerine liste için yepyeni bir 'emptied' (geçmiş) kaydı oluşturulur.
+  Future<void> emptyBoxWithAmount({
+    required DonationBox box,
+    required String emptiedBy,
+    required double donationAmount,
+    List<ExpenseItem>? expenses,
+  }) async {
+    // Liste için yeni bir "boşaltıldı" geçmiş kaydı oluştur
+    final historyBox = DonationBox(
+      id: const Uuid().v4(),
+      kurumId: box.kurumId,
+      shopName: box.shopName,
+      shopPhone: box.shopPhone,
+      latitude: box.latitude,
+      longitude: box.longitude,
+      droppedBy: box.droppedBy,
+      droppedByPhone: box.droppedByPhone,
+      droppedAt: box.droppedAt,
+      imageUrl: box.imageUrl,
+      status: BoxStatus.emptied, // Boşaltılanlar sekmesinde görünmesini sağlar
+      collectedBy: emptiedBy,
+      collectedAt: DateTime.now(),
+      donationAmount: donationAmount,
+      expenses: expenses,
+    );
+
+    // Yeni kayıt olarak veritabanına gönder
+    await _firestore.collection(_collectionName).doc(historyBox.id).set(historyBox.toMap());
+
+    // Not: Orijinal kutuya DOKUNULMAZ. update() çağırmadığımız için
+    // haritada durumu 'waiting' (sarı) olarak yaşamaya devam eder.
+  }
+
+  /// Kutuyu Al — haritadan tamamen kaldırılır (status: collected)
+  /// Bağış miktarı ve giderler kaydedilir
+  Future<void> collectAndRemoveBox({
     required String boxId,
     required String collectedBy,
     required double donationAmount,
+    List<ExpenseItem>? expenses,
   }) async {
     await _firestore.collection(_collectionName).doc(boxId).update({
       'status': 'collected',
       'collectedBy': collectedBy,
       'collectedAt': FieldValue.serverTimestamp(),
       'donationAmount': donationAmount,
+      'expenses': expenses?.map((e) => e.toMap()).toList(),
     });
+  }
+
+  /// Kutuyu Teslim Al (eski helper metot — uyumluluk için)
+  Future<void> collectBox({
+    required String boxId,
+    required String collectedBy,
+    required double donationAmount,
+  }) async {
+    await collectAndRemoveBox(
+      boxId: boxId,
+      collectedBy: collectedBy,
+      donationAmount: donationAmount,
+    );
   }
 
   /// Bağış kutusu silme işlemi (DELETE)

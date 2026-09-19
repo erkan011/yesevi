@@ -35,6 +35,7 @@ class AppColors {
   static const Color info = Color(0xFF42A5F5);
 
   // ── Kutu Durumları ──
-  static const Color statusWaiting = Color(0xFFFFA726);
-  static const Color statusCollected = Color(0xFF4CAF50);
+  static const Color statusWaiting = Color(0xFFFFC107);    // Sarı — Yeni Bırakıldı / Bekliyor
+  static const Color statusEmptied = Color(0xFFFFC107);    // Sarı — Boşaltıldı
+  static const Color statusCollected = Color(0xFFEF5350);  // Kırmızı — Alındı/Kaldırıldı
 }

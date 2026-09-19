@@ -44,13 +44,20 @@ class BoxListViewModel extends ChangeNotifier {
   }
 
   /// Filtrelenmiş liste
+  /// Tab 0: Bekleyenler (waiting)
+  /// Tab 1: Boşaltılanlar (emptied)
+  /// Tab 2: Alınanlar (collected)
   List<DonationBox> get filteredBoxes {
-    final statusToFilter = _currentTabIndex == 0
-        ? BoxStatus.waiting
-        : BoxStatus.collected;
-
     return _allBoxes.where((box) {
-      final matchesStatus = box.status == statusToFilter;
+      bool matchesStatus = false;
+      if (_currentTabIndex == 0) {
+        matchesStatus = box.status == BoxStatus.waiting;
+      } else if (_currentTabIndex == 1) {
+        matchesStatus = box.status == BoxStatus.emptied;
+      } else {
+        matchesStatus = box.status == BoxStatus.collected;
+      }
+
       final matchesSearch =
           box.shopName.toLowerCase().contains(_searchQuery);
       return matchesStatus && matchesSearch;

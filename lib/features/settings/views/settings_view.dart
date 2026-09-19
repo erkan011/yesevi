@@ -5,6 +5,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/router/app_router.dart';
 import '../viewmodels/settings_viewmodel.dart';
+import '../../../data/services/session_manager.dart';
 
 class SettingsView extends StatefulWidget {
   const SettingsView({super.key});
@@ -67,11 +68,29 @@ class _SettingsViewState extends State<SettingsView> {
 
   @override
   Widget build(BuildContext context) {
+    final sessionUser = SessionManager.instance.currentUser;
     final user = _viewModel.currentUser;
-    final userName = user?.displayName?.isNotEmpty == true
-        ? user!.displayName
-        : 'Saha Personeli';
-    final userEmail = user?.email ?? 'ornek@yesevihareketi.org.tr';
+    final userName = sessionUser?.displayName.isNotEmpty == true
+        ? sessionUser!.displayName
+        : user?.displayName?.isNotEmpty == true
+            ? user!.displayName
+            : 'Saha Personeli';
+    final userEmail = sessionUser?.email ?? user?.email ?? 'ornek@yesevihareketi.org.tr';
+    final userRole = sessionUser?.role ?? 'personel';
+    final userKurumId = sessionUser?.kurumId ?? '-';
+
+    // Rol görüntü metni
+    String roleDisplay;
+    switch (userRole) {
+      case 'super-admin':
+        roleDisplay = 'Süper Admin';
+        break;
+      case 'admin':
+        roleDisplay = 'Kurum Yöneticisi';
+        break;
+      default:
+        roleDisplay = 'Saha Personeli';
+    }
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -87,7 +106,7 @@ class _SettingsViewState extends State<SettingsView> {
           return SingleChildScrollView(
             child: Column(
               children: [
-                // Profil Alanı
+                // ── Profil Alanı ──
                 Container(
                   color: Colors.white,
                   padding: const EdgeInsets.symmetric(
@@ -132,6 +151,22 @@ class _SettingsViewState extends State<SettingsView> {
                                 color: AppColors.textSecondary,
                               ),
                             ),
+                            const SizedBox(height: 4),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                roleDisplay,
+                                style: GoogleFonts.inter(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.primary,
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -139,9 +174,41 @@ class _SettingsViewState extends State<SettingsView> {
                   ),
                 ),
                 
-                const SizedBox(height: 24),
+                const SizedBox(height: 16),
+
+                // ── Kişisel Bilgiler Kartı ──
+                _buildSectionCard(
+                  title: 'Kişisel Bilgiler',
+                  children: [
+                    _buildInfoTile(
+                      icon: Icons.person_outline_rounded,
+                      label: 'İsim Soyisim',
+                      value: userName!,
+                    ),
+                    const Divider(height: 1),
+                    _buildInfoTile(
+                      icon: Icons.email_outlined,
+                      label: 'E-posta',
+                      value: userEmail,
+                    ),
+                    const Divider(height: 1),
+                    _buildInfoTile(
+                      icon: Icons.badge_outlined,
+                      label: 'Rol',
+                      value: roleDisplay,
+                    ),
+                    const Divider(height: 1),
+                    _buildInfoTile(
+                      icon: Icons.business_outlined,
+                      label: 'Kurum ID',
+                      value: userKurumId,
+                    ),
+                  ],
+                ),
                 
-                // Ayarlar Listesi
+                const SizedBox(height: 16),
+                
+                // ── İşlemler Kartı ──
                 Container(
                   margin: const EdgeInsets.symmetric(horizontal: AppConstants.paddingMD),
                   decoration: BoxDecoration(
@@ -196,10 +263,94 @@ class _SettingsViewState extends State<SettingsView> {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
+                const SizedBox(height: 24),
               ],
             ),
           );
         },
+      ),
+    );
+  }
+
+  /// Bölüm kartı (başlıklı)
+  Widget _buildSectionCard({
+    required String title,
+    required List<Widget> children,
+  }) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: AppConstants.paddingMD),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(AppConstants.radiusLG),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.shadow,
+            blurRadius: 12,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: Text(
+              title,
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ),
+          ...children,
+          const SizedBox(height: 8),
+        ],
+      ),
+    );
+  }
+
+  /// Bilgi kutucuğu (salt okunur)
+  Widget _buildInfoTile({
+    required IconData icon,
+    required String label,
+    required String value,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppConstants.paddingMD,
+        vertical: 12,
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: AppColors.textTertiary),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: GoogleFonts.inter(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textTertiary,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -212,37 +363,40 @@ class _SettingsViewState extends State<SettingsView> {
     Color? textColor,
     bool isLoading = false,
   }) {
-    return ListTile(
-      leading: Icon(
-        icon,
-        color: iconColor ?? AppColors.textSecondary,
-      ),
-      title: Text(
-        title,
-        style: GoogleFonts.inter(
-          fontSize: 16,
-          fontWeight: FontWeight.w500,
-          color: textColor ?? AppColors.textPrimary,
+    return Material(
+      color: Colors.transparent,
+      child: ListTile(
+        leading: Icon(
+          icon,
+          color: iconColor ?? AppColors.textSecondary,
         ),
+        title: Text(
+          title,
+          style: GoogleFonts.inter(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+            color: textColor ?? AppColors.textPrimary,
+          ),
+        ),
+        trailing: isLoading
+            ? const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : Icon(
+                Icons.chevron_right_rounded,
+                color: AppColors.textTertiary,
+              ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: AppConstants.paddingMD,
+          vertical: 4,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppConstants.radiusLG),
+        ),
+        onTap: isLoading ? null : onTap,
       ),
-      trailing: isLoading
-          ? const SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            )
-          : Icon(
-              Icons.chevron_right_rounded,
-              color: AppColors.textTertiary,
-            ),
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: AppConstants.paddingMD,
-        vertical: 4,
-      ),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppConstants.radiusLG),
-      ),
-      onTap: isLoading ? null : onTap,
     );
   }
 }

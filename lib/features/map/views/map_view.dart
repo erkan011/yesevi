@@ -90,6 +90,13 @@ class _MapViewState extends State<MapView> {
 
   /// Üst gradient bar — sayfa başlığı
   Widget _buildTopBar() {
+    final waitingCount = _viewModel.boxes
+        .where((b) => b.status == BoxStatus.waiting)
+        .length;
+    final emptiedCount = _viewModel.boxes
+        .where((b) => b.status == BoxStatus.emptied)
+        .length;
+
     return Positioned(
       top: 0,
       left: 0,
@@ -148,19 +155,15 @@ class _MapViewState extends State<MapView> {
 
             // Sağ — Durum göstergeleri
             _buildStatusChip(
-              count: _viewModel.boxes
-                  .where((b) => b.status == BoxStatus.waiting)
-                  .length,
+              count: waitingCount,
               label: 'Bekliyor',
               color: AppColors.statusWaiting,
             ),
             const SizedBox(width: 8),
             _buildStatusChip(
-              count: _viewModel.boxes
-                  .where((b) => b.status == BoxStatus.collected)
-                  .length,
-              label: 'Alındı',
-              color: AppColors.statusCollected,
+              count: emptiedCount,
+              label: 'Boşaltıldı',
+              color: AppColors.statusEmptied,
             ),
           ],
         ),
@@ -327,8 +330,28 @@ class _MapViewState extends State<MapView> {
   /// Kutu bilgi Bottom Sheet'ini göster
   void _showBoxBottomSheet(DonationBox box) {
     final isWaiting = box.status == BoxStatus.waiting;
+    final isEmptied = box.status == BoxStatus.emptied;
     final dateFormat = DateFormat('dd MMM yyyy, HH:mm', 'tr_TR');
     final distance = _viewModel.getDistanceToBox(box);
+
+    // Durum rengi ve metni
+    Color statusColor;
+    String statusText;
+    IconData statusIcon;
+
+    if (isWaiting) {
+      statusColor = AppColors.statusWaiting;
+      statusText = 'Bekliyor';
+      statusIcon = Icons.inventory_2_outlined;
+    } else if (isEmptied) {
+      statusColor = AppColors.statusEmptied;
+      statusText = 'Boşaltıldı';
+      statusIcon = Icons.inbox_outlined;
+    } else {
+      statusColor = AppColors.statusCollected;
+      statusText = 'Alındı';
+      statusIcon = Icons.check_circle_outline_rounded;
+    }
 
     showModalBottomSheet(
       context: context,
@@ -376,19 +399,12 @@ class _MapViewState extends State<MapView> {
                           width: 48,
                           height: 48,
                           decoration: BoxDecoration(
-                            color: (isWaiting
-                                    ? AppColors.statusWaiting
-                                    : AppColors.statusCollected)
-                                .withOpacity(0.12),
+                            color: statusColor.withOpacity(0.12),
                             borderRadius: BorderRadius.circular(14),
                           ),
                           child: Icon(
-                            isWaiting
-                                ? Icons.inventory_2_outlined
-                                : Icons.check_circle_outline_rounded,
-                            color: isWaiting
-                                ? AppColors.statusWaiting
-                                : AppColors.statusCollected,
+                            statusIcon,
+                            color: statusColor,
                             size: 24,
                           ),
                         ),
@@ -414,21 +430,17 @@ class _MapViewState extends State<MapView> {
                                     width: 7,
                                     height: 7,
                                     decoration: BoxDecoration(
-                                      color: isWaiting
-                                          ? AppColors.statusWaiting
-                                          : AppColors.statusCollected,
+                                      color: statusColor,
                                       shape: BoxShape.circle,
                                     ),
                                   ),
                                   const SizedBox(width: 6),
                                   Text(
-                                    isWaiting ? 'Bekliyor' : 'Alındı',
+                                    statusText,
                                     style: GoogleFonts.inter(
                                       fontSize: 13,
                                       fontWeight: FontWeight.w500,
-                                      color: isWaiting
-                                          ? AppColors.statusWaiting
-                                          : AppColors.statusCollected,
+                                      color: statusColor,
                                     ),
                                   ),
                                   if (distance != null) ...[
@@ -457,29 +469,53 @@ class _MapViewState extends State<MapView> {
 
                     const SizedBox(height: 20),
 
-                    // ── Detay Satırları ──
+                    // ── Bırakan Kişi Bilgileri ──
+                    _buildSectionHeader('Bırakan Personel'),
+                    const SizedBox(height: 8),
                     _buildDetailRow(
                       icon: Icons.person_outline_rounded,
-                      label: 'Bırakan',
+                      label: 'İsim',
                       value: box.droppedBy,
                     ),
-                    const SizedBox(height: 10),
+                    if (box.droppedByPhone != null && box.droppedByPhone!.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      _buildDetailRow(
+                        icon: Icons.phone_outlined,
+                        label: 'Telefon',
+                        value: box.droppedByPhone!,
+                      ),
+                    ],
+                    const SizedBox(height: 8),
                     _buildDetailRow(
                       icon: Icons.calendar_today_outlined,
-                      label: 'Bırakılma',
+                      label: 'Tarih',
                       value: dateFormat.format(box.droppedAt),
                     ),
 
+                    // (Teslim Alan Kişi bölümü kaldırıldı)
+
+                    // ── Mekan Numarası ──
+                    if (box.shopPhone != null && box.shopPhone!.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      _buildDetailRow(
+                        icon: Icons.store_outlined,
+                        label: 'Mekan No',
+                        value: box.shopPhone!,
+                      ),
+                    ],
+
                     // Alındıysa ek bilgiler
-                    if (!isWaiting) ...[
-                      const SizedBox(height: 10),
+                    if (box.status == BoxStatus.collected) ...[
+                      const SizedBox(height: 16),
+                      _buildSectionHeader('Toplama Bilgileri'),
+                      const SizedBox(height: 8),
                       _buildDetailRow(
                         icon: Icons.person_outline_rounded,
                         label: 'Alan',
                         value: box.collectedBy ?? '-',
                       ),
                       if (box.collectedAt != null) ...[
-                        const SizedBox(height: 10),
+                        const SizedBox(height: 8),
                         _buildDetailRow(
                           icon: Icons.event_available_outlined,
                           label: 'Alınma',
@@ -487,7 +523,7 @@ class _MapViewState extends State<MapView> {
                         ),
                       ],
                       if (box.donationAmount != null) ...[
-                        const SizedBox(height: 10),
+                        const SizedBox(height: 8),
                         _buildDetailRow(
                           icon: Icons.payments_outlined,
                           label: 'Bağış',
@@ -501,62 +537,82 @@ class _MapViewState extends State<MapView> {
 
                     const SizedBox(height: 24),
 
-                    // ── Aksiyon Butonları ──
-                    Row(
-                      children: [
-                        // Yol Tarifi
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () {
-                              Navigator.pop(ctx);
-                              _viewModel.openDirections(box);
-                            },
-                            icon: const Icon(Icons.directions_rounded, size: 18),
-                            label: const Text('Yol Tarifi'),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: AppColors.primary,
-                              side: const BorderSide(
-                                color: AppColors.primary,
-                                width: 1.5,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              padding: const EdgeInsets.symmetric(vertical: 14),
+                    // ── Aksiyon Butonları (3 buton) ──
+                    if (isWaiting || isEmptied) ...[
+                      // Yol Tarifi
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            Navigator.pop(ctx);
+                            _viewModel.openDirections(box);
+                          },
+                          icon: const Icon(Icons.directions_rounded, size: 18),
+                          label: const Text('Yol Tarifi'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppColors.primary,
+                            side: const BorderSide(
+                              color: AppColors.primary,
+                              width: 1.5,
                             ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
                           ),
                         ),
-                        const SizedBox(width: 12),
+                      ),
+                      const SizedBox(height: 10),
 
-                        // İşlem Yap
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            onPressed: () {
-                              Navigator.pop(ctx);
-                              if (isWaiting) {
-                                BoxActionSheet.showCollectBoxSheet(context, box);
-                              }
-                            },
-                            icon: Icon(
-                              isWaiting
-                                  ? Icons.archive_outlined
-                                  : Icons.visibility_outlined,
-                              size: 18,
-                            ),
-                            label: Text(isWaiting ? 'Kutuyu Al' : 'Detaylar'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary,
-                              foregroundColor: Colors.white,
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                      Row(
+                        children: [
+                          // Kutuyu Boşalt
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () {
+                                Navigator.pop(ctx);
+                                BoxActionSheet.showEmptyBoxSheet(context, box);
+                              },
+                              icon: const Icon(Icons.inbox_outlined, size: 18),
+                              label: const Text('Boşalt'),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: AppColors.statusEmptied,
+                                side: const BorderSide(
+                                  color: AppColors.statusEmptied,
+                                  width: 1.5,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                padding: const EdgeInsets.symmetric(vertical: 14),
                               ),
-                              padding: const EdgeInsets.symmetric(vertical: 14),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
+                          const SizedBox(width: 12),
+
+                          // Kutuyu Al
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              onPressed: () {
+                                Navigator.pop(ctx);
+                                BoxActionSheet.showCollectBoxSheet(context, box);
+                              },
+                              icon: const Icon(Icons.archive_outlined, size: 18),
+                              label: const Text('Kutuyu Al'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                                foregroundColor: Colors.white,
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
 
                     SizedBox(
                       height: MediaQuery.of(ctx).padding.bottom + 16,
@@ -571,6 +627,20 @@ class _MapViewState extends State<MapView> {
     ).whenComplete(() {
       _viewModel.closeBottomSheet();
     });
+  }
+
+
+  /// Bölüm başlığı
+  Widget _buildSectionHeader(String title) {
+    return Text(
+      title,
+      style: GoogleFonts.inter(
+        fontSize: 13,
+        fontWeight: FontWeight.w600,
+        color: AppColors.textSecondary,
+        letterSpacing: 0.3,
+      ),
+    );
   }
 
   /// Detay satırı (ikon + etiket + değer)
