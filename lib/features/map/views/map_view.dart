@@ -113,9 +113,15 @@ class _MapViewState extends State<MapView> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Colors.white,
-              Colors.white.withOpacity(0.95),
-              Colors.white.withOpacity(0.0),
+              Theme.of(context).brightness == Brightness.dark
+                  ? const Color(0xFF121212)
+                  : Colors.white,
+              (Theme.of(context).brightness == Brightness.dark
+                  ? const Color(0xFF121212)
+                  : Colors.white).withOpacity(0.95),
+              (Theme.of(context).brightness == Brightness.dark
+                  ? const Color(0xFF121212)
+                  : Colors.white).withOpacity(0.0),
             ],
             stops: const [0.0, 0.7, 1.0],
           ),
@@ -136,7 +142,7 @@ class _MapViewState extends State<MapView> {
                       style: GoogleFonts.inter(
                         fontSize: 22,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
+                        color: Theme.of(context).textTheme.titleLarge?.color,
                       ),
                     ),
                   ),
@@ -146,7 +152,7 @@ class _MapViewState extends State<MapView> {
                     style: GoogleFonts.inter(
                       fontSize: 13,
                       fontWeight: FontWeight.w400,
-                      color: AppColors.textSecondary,
+                      color: Theme.of(context).textTheme.bodyMedium?.color,
                     ),
                   ),
                 ],
@@ -225,7 +231,7 @@ class _MapViewState extends State<MapView> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF252525) : Colors.white,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
               color: AppColors.warning.withOpacity(0.3),
@@ -244,7 +250,7 @@ class _MapViewState extends State<MapView> {
                   _viewModel.locationError!,
                   style: GoogleFonts.inter(
                     fontSize: 12,
-                    color: AppColors.textSecondary,
+                    color: Theme.of(context).textTheme.bodyMedium?.color,
                   ),
                 ),
               ),
@@ -310,7 +316,7 @@ class _MapViewState extends State<MapView> {
     return FloatingActionButton.small(
       heroTag: heroTag,
       onPressed: onTap,
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF252525) : Colors.white,
       elevation: 3,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
@@ -361,7 +367,7 @@ class _MapViewState extends State<MapView> {
         return Container(
           margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(ctx).brightness == Brightness.dark ? const Color(0xFF252525) : Colors.white,
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
@@ -420,7 +426,7 @@ class _MapViewState extends State<MapView> {
                                 style: GoogleFonts.inter(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w600,
-                                  color: AppColors.textPrimary,
+                                  color: Theme.of(ctx).textTheme.titleLarge?.color,
                                 ),
                               ),
                               const SizedBox(height: 4),
@@ -470,9 +476,10 @@ class _MapViewState extends State<MapView> {
                     const SizedBox(height: 20),
 
                     // ── Bırakan Kişi Bilgileri ──
-                    _buildSectionHeader('Bırakan Personel'),
+                    _buildSectionHeader(ctx, 'Bırakan Personel'),
                     const SizedBox(height: 8),
                     _buildDetailRow(
+                      ctx,
                       icon: Icons.person_outline_rounded,
                       label: 'İsim',
                       value: box.droppedBy,
@@ -480,6 +487,7 @@ class _MapViewState extends State<MapView> {
                     if (box.droppedByPhone != null && box.droppedByPhone!.isNotEmpty) ...[
                       const SizedBox(height: 8),
                       _buildDetailRow(
+                        ctx,
                         icon: Icons.phone_outlined,
                         label: 'Telefon',
                         value: box.droppedByPhone!,
@@ -487,6 +495,7 @@ class _MapViewState extends State<MapView> {
                     ],
                     const SizedBox(height: 8),
                     _buildDetailRow(
+                      ctx,
                       icon: Icons.calendar_today_outlined,
                       label: 'Tarih',
                       value: dateFormat.format(box.droppedAt),
@@ -498,6 +507,7 @@ class _MapViewState extends State<MapView> {
                     if (box.shopPhone != null && box.shopPhone!.isNotEmpty) ...[
                       const SizedBox(height: 8),
                       _buildDetailRow(
+                        ctx,
                         icon: Icons.store_outlined,
                         label: 'Mekan No',
                         value: box.shopPhone!,
@@ -507,9 +517,10 @@ class _MapViewState extends State<MapView> {
                     // Alındıysa ek bilgiler
                     if (box.status == BoxStatus.collected) ...[
                       const SizedBox(height: 16),
-                      _buildSectionHeader('Toplama Bilgileri'),
+                      _buildSectionHeader(ctx, 'Toplama Bilgileri'),
                       const SizedBox(height: 8),
                       _buildDetailRow(
+                        ctx,
                         icon: Icons.person_outline_rounded,
                         label: 'Alan',
                         value: box.collectedBy ?? '-',
@@ -517,6 +528,7 @@ class _MapViewState extends State<MapView> {
                       if (box.collectedAt != null) ...[
                         const SizedBox(height: 8),
                         _buildDetailRow(
+                          ctx,
                           icon: Icons.event_available_outlined,
                           label: 'Alınma',
                           value: dateFormat.format(box.collectedAt!),
@@ -525,6 +537,7 @@ class _MapViewState extends State<MapView> {
                       if (box.donationAmount != null) ...[
                         const SizedBox(height: 8),
                         _buildDetailRow(
+                          ctx,
                           icon: Icons.payments_outlined,
                           label: 'Bağış',
                           value:
@@ -631,20 +644,20 @@ class _MapViewState extends State<MapView> {
 
 
   /// Bölüm başlığı
-  Widget _buildSectionHeader(String title) {
+  Widget _buildSectionHeader(BuildContext ctx, String title) {
     return Text(
       title,
       style: GoogleFonts.inter(
         fontSize: 13,
         fontWeight: FontWeight.w600,
-        color: AppColors.textSecondary,
+        color: Theme.of(ctx).textTheme.bodyMedium?.color,
         letterSpacing: 0.3,
       ),
     );
   }
 
   /// Detay satırı (ikon + etiket + değer)
-  Widget _buildDetailRow({
+  Widget _buildDetailRow(BuildContext ctx, {
     required IconData icon,
     required String label,
     required String value,
@@ -672,7 +685,7 @@ class _MapViewState extends State<MapView> {
             style: GoogleFonts.inter(
               fontSize: 14,
               fontWeight: isBold ? FontWeight.w600 : FontWeight.w500,
-              color: valueColor ?? AppColors.textPrimary,
+              color: valueColor ?? Theme.of(ctx).textTheme.titleMedium?.color,
             ),
           ),
         ),

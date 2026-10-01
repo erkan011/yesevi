@@ -67,10 +67,8 @@ class _RegisterViewState extends State<RegisterView> with SingleTickerProviderSt
     final bottomPadding = MediaQuery.of(context).viewInsets.bottom;
 
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
         leading: BackButton(
-          color: AppColors.textPrimary,
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -116,7 +114,7 @@ class _RegisterViewState extends State<RegisterView> with SingleTickerProviderSt
           style: GoogleFonts.inter(
             fontSize: 26,
             fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
+            color: Theme.of(context).textTheme.titleLarge?.color,
             letterSpacing: -0.5,
           ),
         ),
@@ -126,7 +124,7 @@ class _RegisterViewState extends State<RegisterView> with SingleTickerProviderSt
           style: GoogleFonts.inter(
             fontSize: 14,
             fontWeight: FontWeight.w400,
-            color: AppColors.textSecondary,
+            color: Theme.of(context).textTheme.bodyMedium?.color,
           ),
           textAlign: TextAlign.center,
         ),
@@ -235,7 +233,7 @@ class _RegisterViewState extends State<RegisterView> with SingleTickerProviderSt
       style: GoogleFonts.inter(
         fontSize: 15,
         fontWeight: FontWeight.w400,
-        color: AppColors.textPrimary,
+        color: Theme.of(context).textTheme.bodyLarge?.color,
       ),
       decoration: InputDecoration(
         hintText: hintText,
@@ -249,7 +247,7 @@ class _RegisterViewState extends State<RegisterView> with SingleTickerProviderSt
             : null,
         suffixIconConstraints: const BoxConstraints(minWidth: 44, minHeight: 44),
         filled: true,
-        fillColor: AppColors.inputFill,
+        fillColor: Theme.of(context).inputDecorationTheme.fillColor ?? AppColors.inputFill,
         contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),

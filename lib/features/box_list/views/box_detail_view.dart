@@ -47,10 +47,8 @@ class BoxDetailView extends StatelessWidget {
     return PopScope(
       canPop: true,
       child: Scaffold(
-        backgroundColor: AppColors.background,
         appBar: AppBar(
           title: const Text('Kutu Detayı'),
-          backgroundColor: Colors.white,
           elevation: 0,
           actions: [
             // PDF butonu sadece alınan kutular için (gider varsa)
@@ -70,15 +68,19 @@ class BoxDetailView extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // ── Durum Kartı ──
-              Container(
+              Builder(builder: (context) {
+                final theme = Theme.of(context);
+                final isDark = theme.brightness == Brightness.dark;
+                final cardBg = isDark ? const Color(0xFF252525) : Colors.white;
+                return Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: cardBg,
                   borderRadius: BorderRadius.circular(AppConstants.radiusLG),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.shadow,
+                      color: isDark ? Colors.black26 : AppColors.shadow,
                       blurRadius: 12,
                       offset: const Offset(0, 2),
                     ),
@@ -109,7 +111,7 @@ class BoxDetailView extends StatelessWidget {
                             style: GoogleFonts.inter(
                               fontSize: 20,
                               fontWeight: FontWeight.w700,
-                              color: AppColors.textPrimary,
+                              color: theme.textTheme.titleLarge?.color,
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -139,7 +141,8 @@ class BoxDetailView extends StatelessWidget {
                     ),
                   ],
                 ),
-              ),
+              );
+              }),
 
               const SizedBox(height: 16),
 
@@ -282,15 +285,20 @@ class BoxDetailView extends StatelessWidget {
     required IconData icon,
     required List<Widget> children,
   }) {
-    return Container(
+    return Builder(builder: (context) {
+      final theme = Theme.of(context);
+      final isDark = theme.brightness == Brightness.dark;
+      final cardBg = isDark ? const Color(0xFF252525) : Colors.white;
+
+      return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cardBg,
         borderRadius: BorderRadius.circular(AppConstants.radiusLG),
         boxShadow: [
           BoxShadow(
-            color: AppColors.shadow,
+            color: isDark ? Colors.black26 : AppColors.shadow,
             blurRadius: 12,
             offset: const Offset(0, 2),
           ),
@@ -308,7 +316,7 @@ class BoxDetailView extends StatelessWidget {
                 style: GoogleFonts.inter(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
+                  color: theme.textTheme.titleMedium?.color,
                 ),
               ),
             ],
@@ -318,6 +326,7 @@ class BoxDetailView extends StatelessWidget {
         ],
       ),
     );
+    });
   }
 
   /// Bilgi satırı
@@ -327,34 +336,37 @@ class BoxDetailView extends StatelessWidget {
     Color? valueColor,
     bool isBold = false,
   }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 120,
-            child: Text(
-              label,
-              style: GoogleFonts.inter(
-                fontSize: 13,
-                color: AppColors.textSecondary,
+    return Builder(builder: (context) {
+      final theme = Theme.of(context);
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              width: 120,
+              child: Text(
+                label,
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  color: theme.textTheme.bodyMedium?.color,
+                ),
               ),
             ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: GoogleFonts.inter(
-                fontSize: 14,
-                fontWeight: isBold ? FontWeight.w600 : FontWeight.w500,
-                color: valueColor ?? AppColors.textPrimary,
+            Expanded(
+              child: Text(
+                value,
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: isBold ? FontWeight.w600 : FontWeight.w500,
+                  color: valueColor ?? theme.textTheme.titleMedium?.color,
+                ),
               ),
             ),
-          ),
-        ],
-      ),
-    );
+          ],
+        ),
+      );
+    });
   }
 
   /// PDF oluşturma ve yazdırma/paylaşma
@@ -501,7 +513,7 @@ class BoxDetailView extends StatelessWidget {
               // Alt bilgi
               pw.Divider(),
               pw.Text(
-                'Bu rapor Yesevi Gaziantep uygulamasi tarafindan olusturulmustur.',
+                'Bu rapor Bagis Takip uygulamasi tarafindan olusturulmustur.',
                 style: const pw.TextStyle(
                   fontSize: 9,
                   color: PdfColors.grey600,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/theme_notifier.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/router/app_router.dart';
 import '../viewmodels/settings_viewmodel.dart';
@@ -66,8 +67,135 @@ class _SettingsViewState extends State<SettingsView> {
     }
   }
 
+  /// Tema seçimi modalı
+  void _showThemeDialog() {
+    final themeNotifier = ThemeNotifier.instance;
+
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return ValueListenableBuilder<ThemeMode>(
+          valueListenable: themeNotifier,
+          builder: (context, currentMode, _) {
+            return AlertDialog(
+              title: Text(
+                'Tema Seçimi',
+                style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildThemeOption(
+                    ctx: ctx,
+                    icon: Icons.light_mode_rounded,
+                    title: 'Aydınlık Tema',
+                    subtitle: 'Beyaz arka plan, koyu metinler',
+                    isSelected: currentMode == ThemeMode.light,
+                    onTap: () {
+                      themeNotifier.setThemeMode(ThemeMode.light);
+                      Navigator.pop(ctx);
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                  _buildThemeOption(
+                    ctx: ctx,
+                    icon: Icons.dark_mode_rounded,
+                    title: 'Karanlık Tema',
+                    subtitle: 'Koyu arka plan, açık metinler',
+                    isSelected: currentMode == ThemeMode.dark,
+                    onTap: () {
+                      themeNotifier.setThemeMode(ThemeMode.dark);
+                      Navigator.pop(ctx);
+                    },
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildThemeOption({
+    required BuildContext ctx,
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    final theme = Theme.of(ctx);
+    final cardColor = isSelected
+        ? AppColors.primary.withOpacity(0.08)
+        : theme.cardTheme.color ?? Colors.white;
+    final borderColor = isSelected
+        ? AppColors.primary.withOpacity(0.4)
+        : theme.dividerTheme.color ?? Colors.grey.shade300;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            color: cardColor,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: borderColor, width: 1.5),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                icon,
+                color: isSelected ? AppColors.primary : theme.textTheme.bodyMedium?.color,
+                size: 24,
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: GoogleFonts.inter(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: isSelected ? AppColors.primary : theme.textTheme.titleMedium?.color,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        color: theme.textTheme.bodySmall?.color,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (isSelected)
+                const Icon(
+                  Icons.check_circle_rounded,
+                  color: AppColors.primary,
+                  size: 22,
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final surfaceColor = isDark ? const Color(0xFF252525) : Colors.white;
+    final bgColor = theme.scaffoldBackgroundColor;
+
     final sessionUser = SessionManager.instance.currentUser;
     final user = _viewModel.currentUser;
     final userName = sessionUser?.displayName.isNotEmpty == true
@@ -77,7 +205,8 @@ class _SettingsViewState extends State<SettingsView> {
             : 'Saha Personeli';
     final userEmail = sessionUser?.email ?? user?.email ?? 'ornek@yesevihareketi.org.tr';
     final userRole = sessionUser?.role ?? 'personel';
-    final userKurumId = sessionUser?.kurumId ?? '-';
+    // Telefon numarası varsayımı (session veya firestore verisinden alınabilir ama şu an modelde yoksa sabit olabilir)
+    final userPhone = '-';
 
     // Rol görüntü metni
     String roleDisplay;
@@ -93,12 +222,10 @@ class _SettingsViewState extends State<SettingsView> {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: bgColor,
       appBar: AppBar(
         automaticallyImplyLeading: false,
         title: const Text('Ayarlar'),
-        backgroundColor: Colors.white,
-        elevation: 0,
       ),
       body: ListenableBuilder(
         listenable: _viewModel,
@@ -106,117 +233,100 @@ class _SettingsViewState extends State<SettingsView> {
           return SingleChildScrollView(
             child: Column(
               children: [
-                // ── Profil Alanı ──
-                Container(
-                  color: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppConstants.paddingMD,
-                    vertical: AppConstants.paddingXL,
-                  ),
-                  child: Row(
-                    children: [
-                      // Avatar
-                      Container(
-                        width: 64,
-                        height: 64,
-                        decoration: BoxDecoration(
-                          color: AppColors.primarySurface,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.person_outline_rounded,
-                          color: AppColors.primary,
-                          size: 32,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      // Kullanıcı Bilgileri
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              userName!,
-                              style: GoogleFonts.inter(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              userEmail,
-                              style: GoogleFonts.inter(
-                                fontSize: 14,
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: AppColors.primary.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                roleDisplay,
-                                style: GoogleFonts.inter(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.primary,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                
                 const SizedBox(height: 16),
 
                 // ── Kişisel Bilgiler Kartı ──
                 _buildSectionCard(
                   title: 'Kişisel Bilgiler',
+                  surfaceColor: surfaceColor,
                   children: [
                     _buildInfoTile(
                       icon: Icons.person_outline_rounded,
                       label: 'İsim Soyisim',
                       value: userName!,
                     ),
-                    const Divider(height: 1),
+                    Divider(height: 1, color: theme.dividerTheme.color),
                     _buildInfoTile(
                       icon: Icons.email_outlined,
                       label: 'E-posta',
                       value: userEmail,
                     ),
-                    const Divider(height: 1),
+                    Divider(height: 1, color: theme.dividerTheme.color),
                     _buildInfoTile(
                       icon: Icons.badge_outlined,
                       label: 'Rol',
                       value: roleDisplay,
                     ),
-                    const Divider(height: 1),
+                    Divider(height: 1, color: theme.dividerTheme.color),
                     _buildInfoTile(
-                      icon: Icons.business_outlined,
-                      label: 'Kurum ID',
-                      value: userKurumId,
+                      icon: Icons.phone_outlined,
+                      label: 'Telefon Numarası',
+                      value: userPhone,
                     ),
                   ],
                 ),
                 
+                const SizedBox(height: 16),
+
+                // ── Tema Ayarları Kartı ──
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: AppConstants.paddingMD),
+                  decoration: BoxDecoration(
+                    color: surfaceColor,
+                    borderRadius: BorderRadius.circular(AppConstants.radiusLG),
+                    boxShadow: [
+                      BoxShadow(
+                        color: isDark ? Colors.black26 : AppColors.shadow,
+                        blurRadius: 12,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                        child: Text(
+                          'Görünüm',
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: theme.textTheme.bodyMedium?.color,
+                          ),
+                        ),
+                      ),
+                      ValueListenableBuilder<ThemeMode>(
+                        valueListenable: ThemeNotifier.instance,
+                        builder: (context, currentMode, _) {
+                          return _buildListTile(
+                            icon: currentMode == ThemeMode.dark
+                                ? Icons.dark_mode_rounded
+                                : Icons.light_mode_rounded,
+                            title: currentMode == ThemeMode.dark
+                                ? 'Karanlık Tema'
+                                : 'Aydınlık Tema',
+                            onTap: _showThemeDialog,
+                            surfaceColor: surfaceColor,
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 8),
+                    ],
+                  ),
+                ),
+
                 const SizedBox(height: 16),
                 
                 // ── İşlemler Kartı ──
                 Container(
                   margin: const EdgeInsets.symmetric(horizontal: AppConstants.paddingMD),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: surfaceColor,
                     borderRadius: BorderRadius.circular(AppConstants.radiusLG),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.shadow,
+                        color: isDark ? Colors.black26 : AppColors.shadow,
                         blurRadius: 12,
                         offset: const Offset(0, 2),
                       ),
@@ -230,8 +340,9 @@ class _SettingsViewState extends State<SettingsView> {
                         onTap: () {
                           // Şifre değiştirme sayfasına yönlendirme veya modal
                         },
+                        surfaceColor: surfaceColor,
                       ),
-                      const Divider(),
+                      Divider(color: theme.dividerTheme.color),
                       _buildListTile(
                         icon: Icons.logout_rounded,
                         title: 'Çıkış Yap',
@@ -239,14 +350,16 @@ class _SettingsViewState extends State<SettingsView> {
                         textColor: AppColors.error,
                         onTap: _handleSignOut,
                         isLoading: _viewModel.isLoading,
+                        surfaceColor: surfaceColor,
                       ),
-                      const Divider(),
+                      Divider(color: theme.dividerTheme.color),
                       _buildListTile(
                         icon: Icons.person_remove_outlined,
                         title: 'Hesabımı Sil',
                         iconColor: AppColors.error,
                         textColor: AppColors.error,
                         onTap: _handleDeleteAccount,
+                        surfaceColor: surfaceColor,
                       ),
                     ],
                   ),
@@ -256,10 +369,10 @@ class _SettingsViewState extends State<SettingsView> {
                 
                 // Versiyon ve Alt Bilgi
                 Text(
-                  'Yesevi Gaziantep • v1.0.0',
+                  'Bağış Takip • v${AppConstants.appVersion}',
                   style: GoogleFonts.inter(
                     fontSize: 12,
-                    color: AppColors.textTertiary,
+                    color: theme.textTheme.bodySmall?.color,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -276,15 +389,19 @@ class _SettingsViewState extends State<SettingsView> {
   Widget _buildSectionCard({
     required String title,
     required List<Widget> children,
+    required Color surfaceColor,
   }) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: AppConstants.paddingMD),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: surfaceColor,
         borderRadius: BorderRadius.circular(AppConstants.radiusLG),
         boxShadow: [
           BoxShadow(
-            color: AppColors.shadow,
+            color: isDark ? Colors.black26 : AppColors.shadow,
             blurRadius: 12,
             offset: const Offset(0, 2),
           ),
@@ -300,7 +417,7 @@ class _SettingsViewState extends State<SettingsView> {
               style: GoogleFonts.inter(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textSecondary,
+                color: theme.textTheme.bodyMedium?.color,
               ),
             ),
           ),
@@ -317,6 +434,8 @@ class _SettingsViewState extends State<SettingsView> {
     required String label,
     required String value,
   }) {
+    final theme = Theme.of(context);
+
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: AppConstants.paddingMD,
@@ -324,7 +443,7 @@ class _SettingsViewState extends State<SettingsView> {
       ),
       child: Row(
         children: [
-          Icon(icon, size: 20, color: AppColors.textTertiary),
+          Icon(icon, size: 20, color: theme.textTheme.bodySmall?.color),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -335,7 +454,7 @@ class _SettingsViewState extends State<SettingsView> {
                   style: GoogleFonts.inter(
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
-                    color: AppColors.textTertiary,
+                    color: theme.textTheme.bodySmall?.color,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -344,7 +463,7 @@ class _SettingsViewState extends State<SettingsView> {
                   style: GoogleFonts.inter(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
-                    color: AppColors.textPrimary,
+                    color: theme.textTheme.titleMedium?.color,
                   ),
                 ),
               ],
@@ -359,23 +478,26 @@ class _SettingsViewState extends State<SettingsView> {
     required IconData icon,
     required String title,
     required VoidCallback onTap,
+    required Color surfaceColor,
     Color? iconColor,
     Color? textColor,
     bool isLoading = false,
   }) {
+    final theme = Theme.of(context);
+
     return Material(
       color: Colors.transparent,
       child: ListTile(
         leading: Icon(
           icon,
-          color: iconColor ?? AppColors.textSecondary,
+          color: iconColor ?? theme.textTheme.bodyMedium?.color,
         ),
         title: Text(
           title,
           style: GoogleFonts.inter(
             fontSize: 16,
             fontWeight: FontWeight.w500,
-            color: textColor ?? AppColors.textPrimary,
+            color: textColor ?? theme.textTheme.titleMedium?.color,
           ),
         ),
         trailing: isLoading
@@ -386,7 +508,7 @@ class _SettingsViewState extends State<SettingsView> {
               )
             : Icon(
                 Icons.chevron_right_rounded,
-                color: AppColors.textTertiary,
+                color: theme.textTheme.bodySmall?.color,
               ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: AppConstants.paddingMD,

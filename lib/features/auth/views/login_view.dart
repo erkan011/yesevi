@@ -68,9 +68,12 @@ class _LoginViewState extends State<LoginView>
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final bottomPadding = MediaQuery.of(context).viewInsets.bottom;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final scaffoldBg = theme.scaffoldBackgroundColor;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: scaffoldBg,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: EdgeInsets.only(bottom: bottomPadding),
@@ -91,12 +94,12 @@ class _LoginViewState extends State<LoginView>
                       const Spacer(flex: 2),
 
                       // ── Logo Alanı ──
-                      _buildLogoSection(),
+                      _buildLogoSection(theme, isDark, scaffoldBg),
 
                       const Spacer(flex: 2),
 
                       // ── Form Alanı ──
-                      _buildForm(),
+                      _buildForm(theme, isDark),
 
                       const SizedBox(height: 28),
 
@@ -109,7 +112,7 @@ class _LoginViewState extends State<LoginView>
                       const Spacer(flex: 3),
 
                       // ── Alt Bilgi ──
-                      _buildFooter(),
+                      _buildFooter(theme, isDark),
 
                       const SizedBox(height: 16),
                     ],
@@ -124,35 +127,30 @@ class _LoginViewState extends State<LoginView>
   }
 
   /// Logo ve başlık alanı
-  Widget _buildLogoSection() {
+  Widget _buildLogoSection(ThemeData theme, bool isDark, Color scaffoldBg) {
     return Column(
       children: [
-        // Logo İkonu (Yesevi)
+        // Logo İkonu (Yesevi) — arka plan sayfa rengi ile aynı
         Container(
           width: 120,
           height: 120,
-          padding: const EdgeInsets.all(16), // Logonun kenarlardan kırpılmaması için boşluk
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF0072B5).withOpacity(0.15),
-                blurRadius: 24,
-                offset: const Offset(0, 8),
-              ),
-            ],
+            color: scaffoldBg,
           ),
-          child: Image.asset(
-            'assets/images/yesevilogo.jpeg',
-            fit: BoxFit.contain,
-            errorBuilder: (context, error, stackTrace) => Container(
-              color: Colors.white,
-              alignment: Alignment.center,
-              child: const Icon(
-                Icons.image_not_supported_outlined,
-                color: Color(0xFF0072B5),
-                size: 40,
+          child: ClipOval(
+            child: Image.asset(
+              'assets/images/yesevi_logo.jpg',
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) => Container(
+                color: scaffoldBg,
+                alignment: Alignment.center,
+                child: Icon(
+                  Icons.image_not_supported_outlined,
+                  color: AppColors.primary,
+                  size: 40,
+                ),
               ),
             ),
           ),
@@ -162,11 +160,11 @@ class _LoginViewState extends State<LoginView>
 
         // Uygulama adı
         Text(
-          'Yesevi Gaziantep',
+          'Bağış Takip',
           style: GoogleFonts.inter(
             fontSize: 26,
             fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
+            color: theme.textTheme.titleLarge?.color,
             letterSpacing: -0.5,
           ),
         ),
@@ -179,7 +177,7 @@ class _LoginViewState extends State<LoginView>
           style: GoogleFonts.inter(
             fontSize: 14,
             fontWeight: FontWeight.w400,
-            color: AppColors.textSecondary,
+            color: theme.textTheme.bodyMedium?.color,
           ),
         ),
       ],
@@ -187,7 +185,7 @@ class _LoginViewState extends State<LoginView>
   }
 
   /// E-posta ve şifre formu
-  Widget _buildForm() {
+  Widget _buildForm(ThemeData theme, bool isDark) {
     return ListenableBuilder(
       listenable: _viewModel,
       builder: (context, _) {
@@ -203,6 +201,8 @@ class _LoginViewState extends State<LoginView>
                 keyboardType: TextInputType.text,
                 validator: _viewModel.validateKurum,
                 textInputAction: TextInputAction.next,
+                theme: theme,
+                isDark: isDark,
               ),
 
               const SizedBox(height: 14),
@@ -215,6 +215,8 @@ class _LoginViewState extends State<LoginView>
                 keyboardType: TextInputType.emailAddress,
                 validator: _viewModel.validateEmail,
                 textInputAction: TextInputAction.next,
+                theme: theme,
+                isDark: isDark,
               ),
 
               const SizedBox(height: 14),
@@ -228,6 +230,8 @@ class _LoginViewState extends State<LoginView>
                 validator: _viewModel.validatePassword,
                 textInputAction: TextInputAction.done,
                 onFieldSubmitted: (_) => _handleLogin(),
+                theme: theme,
+                isDark: isDark,
                 suffixIcon: GestureDetector(
                   onTap: _viewModel.togglePasswordVisibility,
                   child: Icon(
@@ -235,7 +239,7 @@ class _LoginViewState extends State<LoginView>
                         ? Icons.visibility_off_outlined
                         : Icons.visibility_outlined,
                     size: 20,
-                    color: AppColors.textTertiary,
+                    color: theme.textTheme.bodySmall?.color,
                   ),
                 ),
               ),
@@ -251,6 +255,8 @@ class _LoginViewState extends State<LoginView>
     required TextEditingController controller,
     required String hintText,
     required IconData prefixIcon,
+    required ThemeData theme,
+    required bool isDark,
     bool obscureText = false,
     TextInputType? keyboardType,
     String? Function(String?)? validator,
@@ -269,7 +275,7 @@ class _LoginViewState extends State<LoginView>
       style: GoogleFonts.inter(
         fontSize: 15,
         fontWeight: FontWeight.w400,
-        color: AppColors.textPrimary,
+        color: theme.textTheme.titleLarge?.color,
       ),
       decoration: InputDecoration(
         hintText: hintText,
@@ -290,53 +296,6 @@ class _LoginViewState extends State<LoginView>
         suffixIconConstraints: const BoxConstraints(
           minWidth: 44,
           minHeight: 44,
-        ),
-        filled: true,
-        fillColor: AppColors.inputFill,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 18,
-          vertical: 16,
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(
-            color: AppColors.border,
-            width: 1,
-          ),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(
-            color: AppColors.primary,
-            width: 1.5,
-          ),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(
-            color: AppColors.error,
-            width: 1,
-          ),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(
-            color: AppColors.error,
-            width: 1.5,
-          ),
-        ),
-        hintStyle: GoogleFonts.inter(
-          fontSize: 14,
-          fontWeight: FontWeight.w400,
-          color: AppColors.textTertiary,
-        ),
-        errorStyle: GoogleFonts.inter(
-          fontSize: 12,
-          color: AppColors.error,
         ),
       ),
     );
@@ -436,14 +395,17 @@ class _LoginViewState extends State<LoginView>
   }
 
   /// Alt bilgi
-  Widget _buildFooter() {
+  Widget _buildFooter(ThemeData theme, bool isDark) {
     return Column(
       children: [
         // Ayırıcı çizgi
         Row(
           children: [
-            const Expanded(
-              child: Divider(color: AppColors.border, thickness: 1),
+            Expanded(
+              child: Divider(
+                color: theme.dividerTheme.color ?? AppColors.border,
+                thickness: 1,
+              ),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -452,13 +414,16 @@ class _LoginViewState extends State<LoginView>
                 style: GoogleFonts.inter(
                   fontSize: 11,
                   fontWeight: FontWeight.w500,
-                  color: AppColors.textTertiary,
+                  color: theme.textTheme.bodySmall?.color,
                   letterSpacing: 0.8,
                 ),
               ),
             ),
-            const Expanded(
-              child: Divider(color: AppColors.border, thickness: 1),
+            Expanded(
+              child: Divider(
+                color: theme.dividerTheme.color ?? AppColors.border,
+                thickness: 1,
+              ),
             ),
           ],
         ),
@@ -468,7 +433,7 @@ class _LoginViewState extends State<LoginView>
           style: GoogleFonts.inter(
             fontSize: 12,
             fontWeight: FontWeight.w400,
-            color: AppColors.textTertiary,
+            color: theme.textTheme.bodySmall?.color,
           ),
         ),
         const SizedBox(height: 8),
@@ -480,7 +445,7 @@ class _LoginViewState extends State<LoginView>
               style: GoogleFonts.inter(
                 fontSize: 13,
                 fontWeight: FontWeight.w400,
-                color: AppColors.textSecondary,
+                color: theme.textTheme.bodyMedium?.color,
               ),
             ),
             TextButton(

@@ -44,12 +44,13 @@ class _BoxListViewState extends State<BoxListView>
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: AppBar(
         automaticallyImplyLeading: false,
         title: const Text('Bağış Kutuları'),
-        backgroundColor: Colors.white,
         elevation: 0,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(120),
@@ -109,7 +110,7 @@ class _BoxListViewState extends State<BoxListView>
                             : 'Alınan kutu bulunamadı',
                     style: GoogleFonts.inter(
                       fontSize: 16,
-                      color: AppColors.textSecondary,
+                      color: Theme.of(context).textTheme.bodyMedium?.color,
                     ),
                   ),
                 ],

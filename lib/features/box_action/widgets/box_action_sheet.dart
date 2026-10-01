@@ -185,7 +185,7 @@ class _DropBoxFormState extends State<_DropBoxForm> {
         maxHeight: MediaQuery.of(context).size.height * 0.85,
       ),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF252525) : Colors.white,
         borderRadius: BorderRadius.circular(24),
       ),
       child: SingleChildScrollView(
@@ -219,7 +219,7 @@ class _DropBoxFormState extends State<_DropBoxForm> {
                 style: GoogleFonts.inter(
                   fontSize: 20,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  color: Theme.of(context).textTheme.titleLarge?.color,
                 ),
               ),
               const SizedBox(height: 8),
@@ -227,7 +227,7 @@ class _DropBoxFormState extends State<_DropBoxForm> {
                 'Kutu bilgilerini girin, konum GPS ile otomatik seçilir.',
                 style: GoogleFonts.inter(
                   fontSize: 13,
-                  color: AppColors.textSecondary,
+                  color: Theme.of(context).textTheme.bodyMedium?.color,
                 ),
               ),
               const SizedBox(height: 24),
@@ -415,7 +415,7 @@ class _DropBoxFormState extends State<_DropBoxForm> {
       style: GoogleFonts.inter(
         fontSize: 14,
         fontWeight: FontWeight.w600,
-        color: AppColors.textPrimary,
+        color: Theme.of(context).textTheme.titleMedium?.color,
       ),
     );
   }
@@ -550,7 +550,7 @@ class _CollectBoxFormState extends State<_CollectBoxForm> {
         maxHeight: MediaQuery.of(context).size.height * 0.85,
       ),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF252525) : Colors.white,
         borderRadius: BorderRadius.circular(24),
       ),
       child: SingleChildScrollView(
@@ -584,7 +584,7 @@ class _CollectBoxFormState extends State<_CollectBoxForm> {
                 style: GoogleFonts.inter(
                   fontSize: 20,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  color: Theme.of(context).textTheme.titleLarge?.color,
                 ),
               ),
               const SizedBox(height: 8),
@@ -593,7 +593,7 @@ class _CollectBoxFormState extends State<_CollectBoxForm> {
                 '${widget.isRemoval ? '' : ' Kutu haritada sarı renkli olarak işaretlenecektir.'}',
                 style: GoogleFonts.inter(
                   fontSize: 13,
-                  color: AppColors.textSecondary,
+                  color: Theme.of(context).textTheme.bodyMedium?.color,
                 ),
               ),
               const SizedBox(height: 24),
@@ -604,7 +604,7 @@ class _CollectBoxFormState extends State<_CollectBoxForm> {
                 style: GoogleFonts.inter(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
+                  color: Theme.of(context).textTheme.titleMedium?.color,
                 ),
               ),
               const SizedBox(height: 10),
@@ -629,7 +629,7 @@ class _CollectBoxFormState extends State<_CollectBoxForm> {
                     style: GoogleFonts.inter(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
+                      color: Theme.of(context).textTheme.titleMedium?.color,
                     ),
                   ),
                   TextButton.icon(

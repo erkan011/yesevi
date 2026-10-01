@@ -5,7 +5,7 @@ class AppConstants {
   AppConstants._();
 
   // ── Uygulama Bilgileri ──
-  static const String appName = 'Yesevi Gaziantep';
+  static const String appName = 'Bağış Takip';
   static const String appVersion = '1.0.0';
 
   // ── Varsayılan Harita Konumu (Gaziantep Merkez) ──

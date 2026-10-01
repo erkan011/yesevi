@@ -160,9 +160,7 @@ class _AddBeneficiaryViewState extends State<AddBeneficiaryView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
@@ -173,7 +171,7 @@ class _AddBeneficiaryViewState extends State<AddBeneficiaryView> {
           style: GoogleFonts.inter(
             fontSize: 18,
             fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
+            color: Theme.of(context).textTheme.titleLarge?.color,
           ),
         ),
       ),
@@ -191,7 +189,7 @@ class _AddBeneficiaryViewState extends State<AddBeneficiaryView> {
             const SizedBox(height: 16),
             Text(
               'Konum alınıyor...',
-              style: GoogleFonts.inter(color: AppColors.textSecondary),
+              style: GoogleFonts.inter(color: Theme.of(context).textTheme.bodyMedium?.color),
             ),
           ],
         ),
@@ -415,7 +413,7 @@ class _AddBeneficiaryViewState extends State<AddBeneficiaryView> {
       style: GoogleFonts.inter(
         fontSize: 13,
         fontWeight: FontWeight.w600,
-        color: AppColors.textSecondary,
+        color: Theme.of(context).textTheme.bodyMedium?.color,
       ),
     );
   }

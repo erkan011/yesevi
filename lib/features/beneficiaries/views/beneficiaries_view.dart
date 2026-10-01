@@ -46,22 +46,21 @@ class _BeneficiariesViewState extends State<BeneficiariesView> {
     return DefaultTabController(
       length: 2,
       child: Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
         automaticallyImplyLeading: false,
-        backgroundColor: Colors.white,
         elevation: 0,
         title: Text(
           'İhtiyaç Sahipleri',
           style: GoogleFonts.inter(
             fontSize: 20,
             fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
+            color: Theme.of(context).textTheme.titleLarge?.color,
           ),
         ),
         bottom: TabBar(
           labelColor: AppColors.primary,
-          unselectedLabelColor: AppColors.textSecondary,
+          unselectedLabelColor: Theme.of(context).textTheme.bodyMedium?.color,
           indicatorColor: AppColors.primary,
           indicatorWeight: 3,
           labelStyle: GoogleFonts.inter(fontWeight: FontWeight.w600),
@@ -108,8 +107,12 @@ class _BeneficiariesViewState extends State<BeneficiariesView> {
 
   /// Arama çubuğu ve durum filtresi
   Widget _buildSearchAndFilter() {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final surfaceColor = isDark ? const Color(0xFF1E1E1E) : Colors.white;
+
     return Container(
-      color: Colors.white,
+      color: surfaceColor,
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
       child: Column(
         children: [
@@ -126,7 +129,7 @@ class _BeneficiariesViewState extends State<BeneficiariesView> {
               ),
               prefixIcon: const Icon(Icons.search_rounded, size: 20),
               filled: true,
-              fillColor: AppColors.inputFill,
+              fillColor: theme.inputDecorationTheme.fillColor ?? AppColors.inputFill,
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 16,
                 vertical: 12,
@@ -156,12 +159,12 @@ class _BeneficiariesViewState extends State<BeneficiariesView> {
                     style: GoogleFonts.inter(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
-                      color: isSelected ? Colors.white : AppColors.textSecondary,
+                      color: isSelected ? Colors.white : Theme.of(context).textTheme.bodyMedium?.color,
                     ),
                   ),
                   selected: isSelected,
                   selectedColor: AppColors.primary,
-                  backgroundColor: AppColors.inputFill,
+                  backgroundColor: theme.inputDecorationTheme.fillColor ?? AppColors.inputFill,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),
@@ -232,16 +235,19 @@ class _BeneficiariesViewState extends State<BeneficiariesView> {
 
   /// Kişi kartı
   Widget _buildBeneficiaryCard(Beneficiary b) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final cardBg = isDark ? const Color(0xFF252525) : Colors.white;
     final dateFormat = DateFormat('dd MMM yyyy', 'tr_TR');
     final statusColor = _getStatusColor(b.needStatus);
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cardBg,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: AppColors.shadow,
+            color: isDark ? Colors.black26 : AppColors.shadow,
             blurRadius: 12,
             offset: const Offset(0, 2),
           ),
@@ -287,7 +293,7 @@ class _BeneficiariesViewState extends State<BeneficiariesView> {
                             style: GoogleFonts.inter(
                               fontSize: 15,
                               fontWeight: FontWeight.w600,
-                              color: AppColors.textPrimary,
+                              color: theme.textTheme.titleMedium?.color,
                             ),
                           ),
                           const SizedBox(height: 2),
@@ -295,7 +301,7 @@ class _BeneficiariesViewState extends State<BeneficiariesView> {
                             b.address,
                             style: GoogleFonts.inter(
                               fontSize: 12,
-                              color: AppColors.textSecondary,
+                              color: theme.textTheme.bodyMedium?.color,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -344,7 +350,7 @@ class _BeneficiariesViewState extends State<BeneficiariesView> {
                       b.phone,
                       style: GoogleFonts.inter(
                         fontSize: 12,
-                        color: AppColors.textSecondary,
+                        color: theme.textTheme.bodyMedium?.color,
                       ),
                     ),
                     const Spacer(),
@@ -396,7 +402,7 @@ class _BeneficiariesViewState extends State<BeneficiariesView> {
             style: GoogleFonts.inter(
               fontSize: 17,
               fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary,
+              color: Theme.of(context).textTheme.titleLarge?.color,
             ),
           ),
           const SizedBox(height: 8),
@@ -405,7 +411,7 @@ class _BeneficiariesViewState extends State<BeneficiariesView> {
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
               fontSize: 13,
-              color: AppColors.textSecondary,
+              color: Theme.of(context).textTheme.bodyMedium?.color,
               height: 1.5,
             ),
           ),
@@ -427,7 +433,7 @@ class _BeneficiariesViewState extends State<BeneficiariesView> {
         return Container(
           margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(ctx).brightness == Brightness.dark ? const Color(0xFF252525) : Colors.white,
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
@@ -483,7 +489,7 @@ class _BeneficiariesViewState extends State<BeneficiariesView> {
                                 style: GoogleFonts.inter(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w600,
-                                  color: AppColors.textPrimary,
+                                  color: Theme.of(ctx).textTheme.titleLarge?.color,
                                 ),
                               ),
                               const SizedBox(height: 4),
@@ -518,24 +524,28 @@ class _BeneficiariesViewState extends State<BeneficiariesView> {
 
                     // Detay satırları
                     _buildDetailRow(
+                      ctx,
                       icon: Icons.phone_outlined,
                       label: 'Telefon',
                       value: b.phone,
                     ),
                     const SizedBox(height: 10),
                     _buildDetailRow(
+                      ctx,
                       icon: Icons.location_on_outlined,
                       label: 'Adres',
                       value: b.address,
                     ),
                     const SizedBox(height: 10),
                     _buildDetailRow(
+                      ctx,
                       icon: Icons.person_outline_rounded,
                       label: 'Ekleyen',
                       value: b.addedBy,
                     ),
                     const SizedBox(height: 10),
                     _buildDetailRow(
+                      ctx,
                       icon: Icons.calendar_today_outlined,
                       label: 'Tarih',
                       value: dateFormat.format(b.createdAt),
@@ -543,6 +553,7 @@ class _BeneficiariesViewState extends State<BeneficiariesView> {
                     if (b.notes != null && b.notes!.isNotEmpty) ...[
                       const SizedBox(height: 10),
                       _buildDetailRow(
+                        ctx,
                         icon: Icons.notes_rounded,
                         label: 'Not',
                         value: b.notes!,
@@ -557,7 +568,7 @@ class _BeneficiariesViewState extends State<BeneficiariesView> {
                       style: GoogleFonts.inter(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.textSecondary,
+                        color: Theme.of(ctx).textTheme.bodyMedium?.color,
                       ),
                     ),
                     const SizedBox(height: 10),
@@ -611,7 +622,7 @@ class _BeneficiariesViewState extends State<BeneficiariesView> {
   }
 
   /// Detay satırı widget'ı
-  Widget _buildDetailRow({
+  Widget _buildDetailRow(BuildContext ctx, {
     required IconData icon,
     required String label,
     required String value,
@@ -638,7 +649,7 @@ class _BeneficiariesViewState extends State<BeneficiariesView> {
             style: GoogleFonts.inter(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: AppColors.textPrimary,
+              color: Theme.of(ctx).textTheme.titleMedium?.color,
             ),
           ),
         ),

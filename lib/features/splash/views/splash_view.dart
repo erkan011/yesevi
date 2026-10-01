@@ -54,45 +54,29 @@ class _SplashViewState extends State<SplashView> {
 
   @override
   Widget build(BuildContext context) {
+    // Daima karanlık mod
+    const scaffoldBg = Color(0xFF121212);
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: scaffoldBg,
       body: Center(
         child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Logo
+              // Logo — arka plan rengi sayfa ile aynı
               Container(
-                width: 120,
-                height: 120,
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.1),
+                width: 140,
+                height: 140,
+                padding: const EdgeInsets.all(16),
+                decoration: const BoxDecoration(
+                  color: scaffoldBg,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
-                  Icons.map_rounded,
-                  size: 56,
-                  color: AppColors.primary,
-                ),
-              ),
-              const SizedBox(height: 32),
-              // App Adı
-              Text(
-                'Yesevi Harekatına',
-                style: GoogleFonts.inter(
-                  fontSize: 20,
-                  color: AppColors.textSecondary,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.2,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                'HOŞGELDİNİZ',
-                style: GoogleFonts.inter(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.primary,
-                  letterSpacing: 0.5,
+                child: ClipOval(
+                  child: Image.asset(
+                    'assets/images/yesevi_logo.jpg',
+                    fit: BoxFit.contain,
+                  ),
                 ),
               ),
               const SizedBox(height: 64),

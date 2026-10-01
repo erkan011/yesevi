@@ -35,7 +35,7 @@ dev_dependencies:
 flutter_launcher_icons:
   android: "ic_launcher"
   ios: false
-  image_path: "assets/images/yesevilogo.jpeg"
+  image_path: "assets/images/yesevi_logo.jpg"
 
 flutter:
   uses-material-design: true

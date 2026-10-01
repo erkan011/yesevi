@@ -47,23 +47,29 @@ class BoxCard extends StatelessWidget {
 
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.symmetric(
-          horizontal: AppConstants.paddingMD,
-          vertical: 6,
-        ),
-        padding: const EdgeInsets.all(AppConstants.paddingMD),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(AppConstants.radiusLG),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.shadow,
-              blurRadius: 12,
-              offset: const Offset(0, 2),
+      child: Builder(
+        builder: (context) {
+          final theme = Theme.of(context);
+          final isDark = theme.brightness == Brightness.dark;
+          final cardBg = isDark ? const Color(0xFF252525) : Colors.white;
+
+          return Container(
+            margin: const EdgeInsets.symmetric(
+              horizontal: AppConstants.paddingMD,
+              vertical: 6,
             ),
-          ],
-        ),
+            padding: const EdgeInsets.all(AppConstants.paddingMD),
+            decoration: BoxDecoration(
+              color: cardBg,
+              borderRadius: BorderRadius.circular(AppConstants.radiusLG),
+              boxShadow: [
+                BoxShadow(
+                  color: isDark ? Colors.black26 : AppColors.shadow,
+                  blurRadius: 12,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
         child: Row(
           children: [
             // Durum İkonu
@@ -134,7 +140,9 @@ class BoxCard extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
+          );  // Container
+        },     // builder function
+      ),       // Builder
+    );         // GestureDetector
   }
 }

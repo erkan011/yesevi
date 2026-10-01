@@ -99,47 +99,56 @@ class _HomeViewState extends State<HomeView> {
             _getPage(3),
           ],
         ),
-        bottomNavigationBar: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.shadow,
-                blurRadius: 16,
-                offset: const Offset(0, -4),
+        bottomNavigationBar: Builder(
+          builder: (context) {
+            final theme = Theme.of(context);
+            final isDark = theme.brightness == Brightness.dark;
+            final navBg = isDark ? const Color(0xFF1E1E1E) : Colors.white;
+
+            return Container(
+              decoration: BoxDecoration(
+                color: navBg,
+                boxShadow: [
+                  BoxShadow(
+                    color: isDark ? Colors.black26 : AppColors.shadow,
+                    blurRadius: 16,
+                    offset: const Offset(0, -4),
+                  ),
+                ],
               ),
-            ],
-          ),
-          child: SafeArea(
-            top: false,
-            child: BottomNavigationBar(
-              currentIndex: _currentIndex,
-              onTap: (index) => setState(() => _currentIndex = index),
-              type: BottomNavigationBarType.fixed,
-              items: const [
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.map_outlined),
-                  activeIcon: Icon(Icons.map),
-                  label: 'Harita',
+              child: SafeArea(
+                top: false,
+                child: BottomNavigationBar(
+                  currentIndex: _currentIndex,
+                  onTap: (index) => setState(() => _currentIndex = index),
+                  type: BottomNavigationBarType.fixed,
+                  backgroundColor: navBg,
+                  items: const [
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.map_outlined),
+                      activeIcon: Icon(Icons.map),
+                      label: 'Harita',
+                    ),
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.list_alt_outlined),
+                      activeIcon: Icon(Icons.list_alt),
+                      label: 'Kutular',
+                    ),
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.people_outline_rounded),
+                      activeIcon: Icon(Icons.people_rounded),
+                      label: 'İhtiyaç',
+                    ),
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.settings_outlined),
+                      activeIcon: Icon(Icons.settings),
+                      label: 'Ayarlar',
+                    ),
+                  ],
                 ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.list_alt_outlined),
-                  activeIcon: Icon(Icons.list_alt),
-                  label: 'Kutular',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.people_outline_rounded),
-                  activeIcon: Icon(Icons.people_rounded),
-                  label: 'İhtiyaç',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.settings_outlined),
-                  activeIcon: Icon(Icons.settings),
-                  label: 'Ayarlar',
-                ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         ),
       ),
     );

@@ -78,10 +78,10 @@ class _MapPickerViewState extends State<MapPickerView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('Konum Seçin'),
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor ?? Theme.of(context).scaffoldBackgroundColor,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
@@ -119,7 +119,7 @@ class _MapPickerViewState extends State<MapPickerView> {
             child: FloatingActionButton.small(
               heroTag: 'map_picker_gps',
               onPressed: _goToCurrentLocation,
-              backgroundColor: Colors.white,
+              backgroundColor: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF252525) : Colors.white,
               elevation: 4,
               child: _isLocating
                   ? const SizedBox(
@@ -143,7 +143,7 @@ class _MapPickerViewState extends State<MapPickerView> {
             child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF252525) : Colors.white,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
@@ -158,14 +158,14 @@ class _MapPickerViewState extends State<MapPickerView> {
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.info_outline_rounded, size: 20, color: AppColors.textSecondary),
+                      Icon(Icons.info_outline_rounded, size: 20, color: Theme.of(context).textTheme.bodyMedium?.color),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           'Haritayı kaydırarak kırmızı pini hedefe getirin ve "Seç" butonuna basın.',
                           style: GoogleFonts.inter(
                             fontSize: 13,
-                            color: AppColors.textSecondary,
+                            color: Theme.of(context).textTheme.bodyMedium?.color,
                             height: 1.4,
                           ),
                         ),
