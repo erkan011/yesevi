@@ -8,10 +8,12 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'app.dart';
 import 'core/router/app_router.dart';
 import 'data/services/auth_service.dart';
+import 'core/theme/theme_notifier.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('tr_TR', null);
+  await ThemeNotifier.instance.init();
 
   // Splash Screen uygulamanın başlangıç rotası olacak ve Firebase'i arka planda yükleyecek.
   String initialRoute = AppRouter.splash;

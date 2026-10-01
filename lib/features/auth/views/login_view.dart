@@ -398,36 +398,7 @@ class _LoginViewState extends State<LoginView>
   Widget _buildFooter(ThemeData theme, bool isDark) {
     return Column(
       children: [
-        // Ayırıcı çizgi
-        Row(
-          children: [
-            Expanded(
-              child: Divider(
-                color: theme.dividerTheme.color ?? AppColors.border,
-                thickness: 1,
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                'Yesevi Hareketi',
-                style: GoogleFonts.inter(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
-                  color: theme.textTheme.bodySmall?.color,
-                  letterSpacing: 0.8,
-                ),
-              ),
-            ),
-            Expanded(
-              child: Divider(
-                color: theme.dividerTheme.color ?? AppColors.border,
-                thickness: 1,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
+
         Text(
           'Saha personeli hesabınız ile giriş yapın',
           style: GoogleFonts.inter(

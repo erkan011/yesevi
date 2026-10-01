@@ -7,6 +7,7 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/router/app_router.dart';
 import '../viewmodels/settings_viewmodel.dart';
 import '../../../data/services/session_manager.dart';
+import '../../../data/services/auth_service.dart';
 
 class SettingsView extends StatefulWidget {
   const SettingsView({super.key});
@@ -31,10 +32,10 @@ class _SettingsViewState extends State<SettingsView> {
   }
 
   void _handleSignOut() async {
-    final success = await _viewModel.signOut();
-    if (success && mounted) {
-      Navigator.of(context).pushReplacementNamed(AppRouter.login);
-    }
+    // Tüm sayfaları temizleyip login sayfasına dön ki dinlenen streamler kapansın
+    Navigator.of(context).pushNamedAndRemoveUntil(AppRouter.login, (route) => false);
+    // Arka planda çıkış yap
+    await AuthService().signOut();
   }
 
   void _handleDeleteAccount() async {
@@ -60,10 +61,8 @@ class _SettingsViewState extends State<SettingsView> {
     );
 
     if (confirmed == true && mounted) {
-      final success = await _viewModel.deleteAccount();
-      if (success && mounted) {
-        Navigator.of(context).pushReplacementNamed(AppRouter.login);
-      }
+      Navigator.of(context).pushNamedAndRemoveUntil(AppRouter.login, (route) => false);
+      await AuthService().deleteAccount();
     }
   }
 

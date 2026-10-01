@@ -24,10 +24,7 @@ class _SplashViewState extends State<SplashView> {
   Future<void> _initializeApp() async {
     try {
       // Arka planda Firebase'i başlat ve Google Maps / Flutter yüklemelerini saklamak için ~2.5 sn bekle
-      await Future.wait([
-        Firebase.initializeApp(),
-        Future.delayed(const Duration(milliseconds: 2500)),
-      ]);
+      await Firebase.initializeApp();
 
       if (!mounted) return;
 

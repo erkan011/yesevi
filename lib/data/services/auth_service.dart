@@ -28,23 +28,7 @@ class AuthService {
     required String password,
   }) async {
     try {
-      // 1. Kurum adı ile sorgu yap
-      final kurumQuery = await _firestore
-          .collection('kurumlar')
-          .where('name', isEqualTo: kurumAdi.trim())
-          .limit(1)
-          .get();
-
-      if (kurumQuery.docs.isEmpty) {
-        throw FirebaseAuthException(
-          code: 'kurum-not-found',
-          message: 'Böyle bir kurum bulunamadı.',
-        );
-      }
-      
-      final foundKurumId = kurumQuery.docs.first.id;
-
-      // 2. Auth Girişi
+      // 1. Önce Auth Girişi yap (Firestore yetkilendirmesi için)
       final credential = await _auth.signInWithEmailAndPassword(
         email: email.trim(),
         password: password,
@@ -58,9 +42,34 @@ class AuthService {
         );
       }
 
-      // 3. Firestore'dan personelin dokümanını çek
+      // 2. Firestore'dan personelin dokümanını çek
       final userModel = await _fetchUserFromFirestore(user);
+
+      if (userModel.kurumId == null || userModel.kurumId!.isEmpty) {
+        await _auth.signOut();
+        throw FirebaseAuthException(
+          code: 'kurum-not-found',
+          message: 'Hesabınıza tanımlı bir kurum bulunamadı.',
+        );
+      }
+
+      // 3. Giriş yaptıktan sonra kurum adı ile sorgu yap (Artık okuma yetkimiz var)
+      final kurumQuery = await _firestore
+          .collection('kurumlar')
+          .where('name', isEqualTo: kurumAdi.trim())
+          .limit(1)
+          .get();
+
+      if (kurumQuery.docs.isEmpty) {
+        await _auth.signOut();
+        throw FirebaseAuthException(
+          code: 'kurum-not-found',
+          message: 'Böyle bir kurum bulunamadı.',
+        );
+      }
       
+      final foundKurumId = kurumQuery.docs.first.id;
+
       // 4. Kurum ID eşleşme kontrolü
       if (userModel.kurumId != foundKurumId) {
         await _auth.signOut();

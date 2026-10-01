@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// Tema durumunu yöneten global notifier.
 ///
@@ -13,8 +14,19 @@ class ThemeNotifier extends ValueNotifier<ThemeMode> {
 
   bool get isDark => value == ThemeMode.dark;
 
-  void setThemeMode(ThemeMode mode) {
+  Future<void> init() async {
+    final prefs = await SharedPreferences.getInstance();
+    final isDarkSaved = prefs.getBool('isDark');
+    if (isDarkSaved != null) {
+      setThemeMode(isDarkSaved ? ThemeMode.dark : ThemeMode.light);
+    }
+  }
+
+  void setThemeMode(ThemeMode mode) async {
     value = mode;
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isDark', mode == ThemeMode.dark);
 
     // Durum çubuğu renklerini güncelle
     SystemChrome.setSystemUIOverlayStyle(
