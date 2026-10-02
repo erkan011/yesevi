@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -60,19 +59,30 @@ class _SplashViewState extends State<SplashView> {
         child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Logo — arka plan rengi sayfa ile aynı
+              // Logo — büyük ve yuvarlak
               Container(
-                width: 140,
-                height: 140,
-                padding: const EdgeInsets.all(16),
-                decoration: const BoxDecoration(
-                  color: scaffoldBg,
+                width: 220,
+                height: 220,
+                decoration: BoxDecoration(
                   shape: BoxShape.circle,
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.15),
+                    width: 3,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.3),
+                      blurRadius: 24,
+                      spreadRadius: 4,
+                    ),
+                  ],
                 ),
                 child: ClipOval(
                   child: Image.asset(
                     'assets/images/yesevi_logo.jpg',
-                    fit: BoxFit.contain,
+                    fit: BoxFit.cover,
+                    width: 220,
+                    height: 220,
                   ),
                 ),
               ),

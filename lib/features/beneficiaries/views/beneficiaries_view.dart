@@ -20,20 +20,30 @@ class BeneficiariesView extends StatefulWidget {
   State<BeneficiariesView> createState() => _BeneficiariesViewState();
 }
 
-class _BeneficiariesViewState extends State<BeneficiariesView> {
+class _BeneficiariesViewState extends State<BeneficiariesView>
+    with SingleTickerProviderStateMixin {
   late final BeneficiariesViewModel _viewModel;
+  late final TabController _tabController;
+  bool _mapTabVisited = false; // Lazy load: harita sadece ziyaret edildiğinde yüklenir
 
   @override
   void initState() {
     super.initState();
     _viewModel = BeneficiariesViewModel();
     _viewModel.addListener(_onChanged);
+    _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging && _tabController.index == 1 && !_mapTabVisited) {
+        setState(() => _mapTabVisited = true);
+      }
+    });
   }
 
   @override
   void dispose() {
     _viewModel.removeListener(_onChanged);
     _viewModel.dispose();
+    _tabController.dispose();
     super.dispose();
   }
 
@@ -43,9 +53,7 @@ class _BeneficiariesViewState extends State<BeneficiariesView> {
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
+    return Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -59,6 +67,7 @@ class _BeneficiariesViewState extends State<BeneficiariesView> {
           ),
         ),
         bottom: TabBar(
+          controller: _tabController,
           labelColor: AppColors.primary,
           unselectedLabelColor: Theme.of(context).textTheme.bodyMedium?.color,
           indicatorColor: AppColors.primary,
@@ -78,10 +87,14 @@ class _BeneficiariesViewState extends State<BeneficiariesView> {
           // ── İçerik (Sekmeler) ──
           Expanded(
             child: TabBarView(
+              controller: _tabController,
               physics: const NeverScrollableScrollPhysics(), // Harita ile çakışmaması için kaydırmayı kapat
               children: [
                 _buildListView(),
-                _buildMapView(),
+                // Lazy load: Harita sadece ilk ziyarette yüklenir
+                _mapTabVisited
+                    ? _buildMapView()
+                    : const Center(child: CircularProgressIndicator()),
               ],
             ),
           ),
@@ -101,9 +114,9 @@ class _BeneficiariesViewState extends State<BeneficiariesView> {
           ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
+
 
   /// Arama çubuğu ve durum filtresi
   Widget _buildSearchAndFilter() {

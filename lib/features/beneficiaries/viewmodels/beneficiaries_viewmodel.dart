@@ -29,10 +29,6 @@ class BeneficiariesViewModel extends ChangeNotifier {
     'Tamamlandı',
   ];
 
-  // ── Görünüm Modu ──
-  bool _isMapView = false;
-  bool get isMapView => _isMapView;
-
   BeneficiariesViewModel() {
     _initStream();
   }
@@ -53,12 +49,6 @@ class BeneficiariesViewModel extends ChangeNotifier {
   /// Filtre değiştiğinde
   void setFilter(String filter) {
     _selectedFilter = filter;
-    notifyListeners();
-  }
-
-  /// Görünüm modunu değiştir (Liste ↔ Harita)
-  void toggleViewMode() {
-    _isMapView = !_isMapView;
     notifyListeners();
   }
 

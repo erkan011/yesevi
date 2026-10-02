@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../../data/services/auth_service.dart';
 import '../../../data/models/user_model.dart';
-import '../../../core/router/app_router.dart';
 
 /// Ayarlar ViewModel'i
 class SettingsViewModel extends ChangeNotifier {
